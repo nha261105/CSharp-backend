@@ -15,6 +15,33 @@ interacthub-backend/
 └── InteractHub.Tests          # Unit & Integration Tests
 ```
 
+## Nuget Packages
+
+```
+InteractHub.API → AutoMapper
+InteractHub.API → AutoMapper.Extensions.Microsoft.DependencyInjection
+InteractHub.API → FluentValidation.AspNetCore
+InteractHub.API → Microsoft.AspNetCore.Authentication.JwtBearer
+InteractHub.API → Microsoft.AspNetCore.OpenApi
+InteractHub.API → Microsoft.EntityFrameworkCore.Design
+InteractHub.API → Serilog.AspNetCore
+InteractHub.API → Serilog.Sinks.Console
+InteractHub.API → Serilog.Sinks.File
+InteractHub.API → Swashbuckle.AspNetCore
+
+InteractHub.Application → AutoMapper
+InteractHub.Application → FluentValidation
+InteractHub.Application → FluentValidation.DependencyInjectionExtensions
+InteractHub.Application → MediatR
+
+InteractHub.Infrastructure → Microsoft.AspNetCore.Identity.EntityFrameworkCore
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.SqlServer
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.Tools
+InteractHub.Infrastructure → System.IdentityModel.Tokens.Jwt
+
+```
+
 **Dependency rule:**
 ```
 API → Core ← Infrastructure

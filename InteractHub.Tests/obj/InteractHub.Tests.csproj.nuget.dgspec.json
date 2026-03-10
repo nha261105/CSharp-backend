@@ -1,0 +1,242 @@
+{
+  "format": 1,
+  "restore": {
+    "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Tests/InteractHub.Tests.csproj": {}
+  },
+  "projects": {
+    "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj",
+        "projectName": "InteractHub.Core",
+        "projectPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj",
+        "packagesPath": "/home/hoanganh/.nuget/packages/",
+        "outputPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/hoanganh/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.124/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Infrastructure/InteractHub.Infrastructure.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Infrastructure/InteractHub.Infrastructure.csproj",
+        "projectName": "InteractHub.Infrastructure",
+        "projectPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Infrastructure/InteractHub.Infrastructure.csproj",
+        "packagesPath": "/home/hoanganh/.nuget/packages/",
+        "outputPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Infrastructure/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/hoanganh/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj": {
+                "projectPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "Azure.Storage.Blobs": {
+              "target": "Package",
+              "version": "[12.19.1, )"
+            },
+            "Microsoft.AspNetCore.Identity.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.SqlServer": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[8.0.0, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.124/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Tests/InteractHub.Tests.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Tests/InteractHub.Tests.csproj",
+        "projectName": "InteractHub.Tests",
+        "projectPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Tests/InteractHub.Tests.csproj",
+        "packagesPath": "/home/hoanganh/.nuget/packages/",
+        "outputPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Tests/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/home/hoanganh/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net8.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net8.0": {
+            "targetAlias": "net8.0",
+            "projectReferences": {
+              "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj": {
+                "projectPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Core/InteractHub.Core.csproj"
+              },
+              "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Infrastructure/InteractHub.Infrastructure.csproj": {
+                "projectPath": "/home/hoanganh/Documents/study/c#/assignment/c#backend/interacthub-backend/InteractHub.Infrastructure/InteractHub.Infrastructure.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "net8.0": {
+          "targetAlias": "net8.0",
+          "dependencies": {
+            "FluentAssertions": {
+              "target": "Package",
+              "version": "[6.12.0, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Testing": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.InMemory": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
+            "Microsoft.NET.Test.Sdk": {
+              "target": "Package",
+              "version": "[17.6.0, )"
+            },
+            "Moq": {
+              "target": "Package",
+              "version": "[4.20.70, )"
+            },
+            "coverlet.collector": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "xunit": {
+              "target": "Package",
+              "version": "[2.4.2, )"
+            },
+            "xunit.runner.visualstudio": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.4.5, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/lib/dotnet/sdk/8.0.124/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}

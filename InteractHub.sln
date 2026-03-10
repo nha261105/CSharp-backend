@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractHub.API", "InteractHub.API\InteractHub.API.csproj", "{FDBE8F00-2BCB-499A-8E48-9245F9E65DF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractHub.Core", "InteractHub.Core\InteractHub.Core.csproj", "{19DA2B84-A47C-4FBF-9D60-15A628E1F8BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractHub.Infrastructure", "InteractHub.Infrastructure\InteractHub.Infrastructure.csproj", "{90379C7D-753B-44C6-837E-6BB49AFE78CF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "InteractHub.Tests", "InteractHub.Tests\InteractHub.Tests.csproj", "{E80B1903-897A-4204-A68E-5D61713223F9}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDBE8F00-2BCB-499A-8E48-9245F9E65DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDBE8F00-2BCB-499A-8E48-9245F9E65DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDBE8F00-2BCB-499A-8E48-9245F9E65DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDBE8F00-2BCB-499A-8E48-9245F9E65DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{19DA2B84-A47C-4FBF-9D60-15A628E1F8BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{19DA2B84-A47C-4FBF-9D60-15A628E1F8BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{19DA2B84-A47C-4FBF-9D60-15A628E1F8BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{19DA2B84-A47C-4FBF-9D60-15A628E1F8BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90379C7D-753B-44C6-837E-6BB49AFE78CF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90379C7D-753B-44C6-837E-6BB49AFE78CF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90379C7D-753B-44C6-837E-6BB49AFE78CF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90379C7D-753B-44C6-837E-6BB49AFE78CF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E80B1903-897A-4204-A68E-5D61713223F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E80B1903-897A-4204-A68E-5D61713223F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E80B1903-897A-4204-A68E-5D61713223F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E80B1903-897A-4204-A68E-5D61713223F9}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

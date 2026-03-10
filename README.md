@@ -1,0 +1,346 @@
+# InteractHub Backend
+
+> ASP.NET Core 8.0 Web API cho ứng dụng mạng xã hội **InteractHub**  
+> Môn học: C# và .NET Development
+
+---
+
+## Kiến Trúc
+
+```
+interacthub-backend/
+├── InteractHub.API            # Presentation Layer (Controllers, Middlewares)
+├── InteractHub.Core           # Domain Layer (Entities, DTOs, Interfaces)
+├── InteractHub.Infrastructure # Infrastructure Layer (EF Core, Repositories, Services)
+└── InteractHub.Tests          # Unit & Integration Tests
+```
+
+## Nuget Packages
+
+```
+InteractHub.API → AutoMapper
+InteractHub.API → AutoMapper.Extensions.Microsoft.DependencyInjection
+InteractHub.API → FluentValidation.AspNetCore
+InteractHub.API → Microsoft.AspNetCore.Authentication.JwtBearer
+InteractHub.API → Microsoft.AspNetCore.OpenApi
+InteractHub.API → Microsoft.EntityFrameworkCore.Design
+InteractHub.API → Serilog.AspNetCore
+InteractHub.API → Serilog.Sinks.Console
+InteractHub.API → Serilog.Sinks.File
+InteractHub.API → Swashbuckle.AspNetCore
+
+InteractHub.Application → AutoMapper
+InteractHub.Application → FluentValidation
+InteractHub.Application → FluentValidation.DependencyInjectionExtensions
+InteractHub.Application → MediatR
+
+InteractHub.Infrastructure → Microsoft.AspNetCore.Identity.EntityFrameworkCore
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.SqlServer
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.Tools
+InteractHub.Infrastructure → System.IdentityModel.Tokens.Jwt
+
+```
+
+**Dependency rule:**
+
+```
+API → Core ← Infrastructure
+```
+
+Core không phụ thuộc bất kỳ layer nào khác.
+
+---
+
+## Tech Stack
+
+| Thành phần     | Công nghệ                      |
+| -------------- | ------------------------------ |
+| Framework      | ASP.NET Core 8.0               |
+| ORM            | Entity Framework Core 8.0      |
+| Database       | SQL Server                     |
+| Authentication | JWT + ASP.NET Core Identity    |
+| Real-time      | SignalR                        |
+| Storage        | Azure Blob Storage             |
+| API Docs       | Swagger / OpenAPI              |
+| Testing        | xUnit + Moq + FluentAssertions |
+| CI/CD          | GitHub Actions                 |
+| Cloud          | Microsoft Azure                |
+
+---
+
+## Yêu Cầu Hệ Thống
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (để chạy SQL Server)
+- Visual Studio 2022 / VS Code / Rider
+
+---
+
+## Hướng Dẫn Chạy Local
+
+### 1. Clone repo
+
+```bash
+git clone https://github.com/<your-org>/interacthub-backend.git
+cd interacthub-backend
+```
+
+### 2. Khởi động SQL Server bằng Docker
+
+```bash
+docker-compose up -d
+```
+
+⏳ **Chờ khoảng 10-15 giây** để SQL Server khởi động hoàn toàn.
+
+Kiểm tra container đã chạy:
+
+```bash
+docker ps
+```
+
+### 3. Tạo file cấu hình local
+
+Tạo file `InteractHub.API/appsettings.Development.json` (**file này đã bị gitignore**):
+
+```json
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=localhost,1433;Database=InteractHubDB;User Id=sa;Password=interacthub@123;TrustServerCertificate=True;"
+  },
+  "JwtSettings": {
+    "SecretKey": "interacthub-super-secret-key-minimum-32-chars!",
+    "Issuer": "InteractHub",
+    "Audience": "InteractHub",
+    "ExpirationInMinutes": 60
+  },
+  "AzureBlobStorage": {
+    "ConnectionString": "",
+    "ContainerName": "interacthub-media"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning",
+      "Microsoft.EntityFrameworkCore.Database.Command": "Information"
+    }
+  },
+  "AllowedHosts": "*",
+  "AllowedOrigins": "http://localhost:5173"
+}
+```
+
+**Note:** Password SQL Server là `interacthub@123` (viết thường, khớp với docker-compose.yml)
+
+### 4. Khôi phục packages
+
+```bash
+dotnet restore
+```
+
+### 5. Chạy Database Migration
+
+```bash
+dotnet ef database update \
+  --project InteractHub.Infrastructure \
+  --startup-project InteractHub.API
+```
+
+### 6. Chạy API
+
+```bash
+dotnet run --project InteractHub.API
+```
+
+Hoặc build trước:
+
+```bash
+dotnet build InteractHub.sln
+dotnet run --project InteractHub.API
+```
+
+### 7. Mở Swagger UI
+
+```
+https://localhost:5001/swagger
+```
+
+hoặc
+
+```
+http://localhost:5000/swagger
+```
+
+---
+
+## Các Lệnh Thường Dùng
+
+### Docker & Database
+
+```bash
+# Bật SQL Server
+docker-compose up -d
+
+# Tắt SQL Server
+docker-compose down
+
+# Xem logs SQL Server
+docker logs interacthub-sqlserver
+
+# Xem container đang chạy
+docker ps
+```
+
+### Build & Run
+
+```bash
+# Restore packages
+dotnet restore
+
+# Build solution
+dotnet build InteractHub.sln
+
+# Chạy API
+dotnet run --project InteractHub.API
+
+# Chạy với watch mode (auto reload khi code thay đổi)
+dotnet watch --project InteractHub.API
+```
+
+### Database Migration
+
+```bash
+# Tạo migration mới
+dotnet ef migrations add <TênMigration> \
+  --project InteractHub.Infrastructure \
+  --startup-project InteractHub.API
+
+# Apply migration
+dotnet ef database update \
+  --project InteractHub.Infrastructure \
+  --startup-project InteractHub.API
+
+# Rollback về migration trước
+dotnet ef database update <TênMigrationTrước> \
+  --project InteractHub.Infrastructure \
+  --startup-project InteractHub.API
+
+# Xóa migration cuối cùng (chưa apply)
+dotnet ef migrations remove \
+  --project InteractHub.Infrastructure \
+  --startup-project InteractHub.API
+```
+
+### Testing
+
+```bash
+# Chạy tất cả tests
+dotnet test
+
+# Chạy tests với code coverage
+dotnet test --collect:"XPlat Code Coverage"
+
+# Chạy tests của 1 project cụ thể
+dotnet test InteractHub.Tests/InteractHub.Tests.csproj
+```
+
+---
+
+## Thông Tin Cấu Hình
+
+### SQL Server (Docker)
+
+- **Host:** `localhost`
+- **Port:** `1433`
+- **Username:** `sa`
+- **Password:** `interacthub@123`
+- **Database:** `InteractHubDB`
+
+### JWT Settings
+
+- **Issuer:** `InteractHub`
+- **Audience:** `InteractHub`
+- **Token Expiration:** 60 phút
+
+### CORS
+
+- **Allowed Origins:** `http://localhost:5173` (Frontend dev server)
+
+---
+
+## Troubleshooting
+
+### Lỗi kết nối SQL Server
+
+```bash
+# Kiểm tra container có chạy không
+docker ps
+
+# Xem logs
+docker logs interacthub-sqlserver
+
+# Restart container
+docker-compose restart
+```
+
+### Lỗi Migration
+
+```bash
+# Xóa database và chạy lại
+dotnet ef database drop --project InteractHub.Infrastructure --startup-project InteractHub.API
+dotnet ef database update --project InteractHub.Infrastructure --startup-project InteractHub.API
+```
+
+### Port đã được sử dụng
+
+Thay đổi port trong `InteractHub.API/Properties/launchSettings.json`
+
+---
+
+## Branch Strategy
+
+| Branch      | Mục đích                          |
+| ----------- | --------------------------------- |
+| `main`      | Production — chỉ merge từ develop |
+| `dev`       | Staging — tích hợp các feature    |
+| `feature/*` | Tính năng mới                     |
+| `fix/*`     | Bug fix                           |
+| `test/*`    | Unit test                         |
+
+**Quy trình:** `feature/xxx` → PR → `dev`  
+⚠️ **CHỈ ĐƯỢC PUSH LÊN BRANCH `dev`** — Không push trực tiếp lên `main`
+
+---
+
+## API Endpoints
+
+Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
+
+| Controller              | Base Route           |
+| ----------------------- | -------------------- |
+| AuthController          | `/api/auth`          |
+| PostsController         | `/api/posts`         |
+| UsersController         | `/api/users`         |
+| FriendsController       | `/api/friends`       |
+| StoriesController       | `/api/stories`       |
+| NotificationsController | `/api/notifications` |
+
+---
+
+## Phân Công Backend Team
+
+<!-- | Thành viên | Phụ trách |
+|-----------|-----------|
+| Leader | Architecture, Auth (B3), CI/CD |
+| Dev 1 | Database & Entities (B1) |
+| Dev 2 | API Controllers & DTOs (B2) |
+| Dev 3 | Service Layer & Business Logic (B4) | -->
+
+---
+
+## Tài Liệu Liên Quan
+
+- [`/docs/erd.png`](docs/erd.png) — Sơ đồ ERD database
+- [`/docs/api.md`](docs/api.md) — Danh sách API endpoint chi tiết
+- [`/docs/deployment.md`](docs/deployment.md) — Hướng dẫn deploy Azure

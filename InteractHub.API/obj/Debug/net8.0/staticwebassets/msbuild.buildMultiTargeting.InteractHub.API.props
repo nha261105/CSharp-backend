@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="../build/InteractHub.API.props" />
-</Project>

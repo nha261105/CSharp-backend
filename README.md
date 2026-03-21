@@ -18,27 +18,32 @@ interacthub-backend/
 ## Nuget Packages
 
 ```
-InteractHub.API → AutoMapper
-InteractHub.API → AutoMapper.Extensions.Microsoft.DependencyInjection
+╰─ grep -r "<PackageReference" --include="*.csproj" -rn . | sed 's|./\([^/]*\)/.*Include="\([^"]*\)".*|\1 → \2|' | sort
 InteractHub.API → FluentValidation.AspNetCore
 InteractHub.API → Microsoft.AspNetCore.Authentication.JwtBearer
 InteractHub.API → Microsoft.AspNetCore.OpenApi
-InteractHub.API → Microsoft.EntityFrameworkCore.Design
+InteractHub.API → Microsoft.AspNetCore.SignalR
 InteractHub.API → Serilog.AspNetCore
 InteractHub.API → Serilog.Sinks.Console
 InteractHub.API → Serilog.Sinks.File
 InteractHub.API → Swashbuckle.AspNetCore
 
-InteractHub.Application → AutoMapper
-InteractHub.Application → FluentValidation
-InteractHub.Application → FluentValidation.DependencyInjectionExtensions
-InteractHub.Application → MediatR
+InteractHub.Core → Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
+InteractHub.Infrastructure → Azure.Storage.Blobs
 InteractHub.Infrastructure → Microsoft.AspNetCore.Identity.EntityFrameworkCore
-InteractHub.Infrastructure → Microsoft.EntityFrameworkCore
+InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.Design
 InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.SqlServer
 InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.Tools
-InteractHub.Infrastructure → System.IdentityModel.Tokens.Jwt
+
+InteractHub.Tests → coverlet.collector
+InteractHub.Tests → FluentAssertions
+InteractHub.Tests → Microsoft.AspNetCore.Mvc.Testing
+InteractHub.Tests → Microsoft.EntityFrameworkCore.InMemory
+InteractHub.Tests → Microsoft.NET.Test.Sdk
+InteractHub.Tests → Moq
+InteractHub.Tests → xunit
+InteractHub.Tests → xunit.runner.visualstudio
 
 ```
 

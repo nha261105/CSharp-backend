@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace InteractHub.Core.Entities;
 
-public class Role : IdentityRole<int>
+public class Role : IdentityRole<long>
 {
     public string? Description { get; set; }
     public bool Delflg { get; set; } = false;

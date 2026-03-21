@@ -46,15 +46,6 @@ InteractHub.Tests → xunit
 InteractHub.Tests → xunit.runner.visualstudio
 
 ```
-
-**Dependency rule:**
-
-```
-API → Core ← Infrastructure
-```
-
-Core không phụ thuộc bất kỳ layer nào khác.
-
 ---
 
 ## Tech Stack
@@ -219,15 +210,10 @@ dotnet watch --project InteractHub.API
 # Tạo migration mới
 dotnet ef migrations add <TênMigration> \
   --project InteractHub.Infrastructure \
-  --startup-project InteractHub.API
+  --startup-project InteractHub.API --output-dir Data/Migrations
 
 # Apply migration
 dotnet ef database update \
-  --project InteractHub.Infrastructure \
-  --startup-project InteractHub.API
-
-# Rollback về migration trước
-dotnet ef database update <TênMigrationTrước> \
   --project InteractHub.Infrastructure \
   --startup-project InteractHub.API
 

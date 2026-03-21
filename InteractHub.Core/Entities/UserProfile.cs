@@ -3,7 +3,7 @@ namespace InteractHub.Core.Entities;
 public class UserProfile
 {
     // Primary Key: do EF tự suy ra (tên class + "Id" = PK)
-    public long UserProfileId { get; set; }
+    public long ProfileId { get; set; }
 
     // FK đến User (1:1)
     public long UserId { get; set; }

@@ -7,12 +7,13 @@ public class User : IdentityUser<long>
     public string? Gender {get; set;}
     public DateTime? DateOfBirth {get; set;}
     public string? AvatarUrl {get; set;}
+    public string? CoverPhotoUrl { get; set; }
     public string? Bio {get; set;}
     public string? WebsiteUrl {get; set;}
     public string? Location {get; set;}
     public bool IsActive {get; set;} = true;
     public bool IsPrivateAccount {get; set;} = false;
-    public DateTime? LastLogin {get; set;}
+    public DateTime? LastLoginDateTime {get; set;}
     public bool Delflg {get; set;} = false;
     public DateTime RegDateTime {get; set;} = DateTime.UtcNow;
     public DateTime? UpDatetime {get; set;}

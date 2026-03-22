@@ -1,7 +1,14 @@
+using System.Text;
 using InteractHub.Core.Entities;
+using InteractHub.Core.Helpers;
+using InteractHub.Core.Interfaces.Services;
 using InteractHub.Infrastructure.Data;
+using InteractHub.Infrastructure.Data.Seeders;
+using InteractHub.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,7 +19,7 @@ builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(
 
 
 // IDENTITY
-builder.Services.AddIdentity<User, Role> (options =>
+builder.Services.AddIdentity<User, Role>(options =>
 {
     // CONFIG PASSWORD
     options.Password.RequireDigit = true;
@@ -30,19 +37,68 @@ builder.Services.AddIdentity<User, Role> (options =>
 })
 .AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
+// CONFIG JWT
+builder.Services.Configure<JwtSettings>(
+    builder.Configuration.GetSection("JwtSettings")
+);
+
+var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("SecretKey is not configured");
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(secretKey)
+        )
+    };
+});
+
+// DEPENDENCY INJECTION
+builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins(builder.Configuration["AllowedOrigins"] ?? "http://localhost:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-if(app.Environment.IsDevelopment())
+// Seed Data
+using (var scope = app.Services.CreateScope())
+{
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
+    await RoleSeeder.SeedAsync(roleManager, userManager);
+}
+
+if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
+app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

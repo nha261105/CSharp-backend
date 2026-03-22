@@ -315,14 +315,125 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
 
 ## Phân Công Backend Team
 
-<!-- | Thành viên | Phụ trách |
-|-----------|-----------|
-| Leader | Architecture, Auth (B3), CI/CD |
-| Dev 1 | Database & Entities (B1) |
-| Dev 2 | API Controllers & DTOs (B2) |
-| Dev 3 | Service Layer & Business Logic (B4) | -->
+### Hoàng Anh
+
+| # | Việc cần làm | Branch | Status |
+|---|-------------|--------|--------|
+| 1 | JWT Auth (Register, Login, Seed Roles) | `feature/auth-jwt` | Done |
+| 2 | PostsService + PostsController | `feature/posts-service` | Inprogress |
+| 3 | NotificationService + NotificationsController | `feature/notifications-service` | Inprogress |
+| 4 | FileUploadService (Azure Blob) | `feature/file-upload-service` | Inprogress |
+| 5 | CI/CD + Azure Deployment | `feature/cicd` | Inprogress |
+
+
+### Thanh Hải
+
+| # | Việc cần làm | Branch | Status |
+|---|-------------|--------|--------|
+| 1 | Seed Data (Roles, Admin, MusicTracks, Hashtags) | `feature/seed-data` | Inprogress |
+| 2 | UserService + UsersController | `feature/users-service` | Inprogress |
+| 3 | StoriesService + StoriesController | `feature/stories-service` | Inprogress |
+| 4 | Unit Test — UserService, StoriesService | `test/users-stories` | Inprogress |
+
+### Gia Hân
+
+| # | Việc cần làm | Branch | Status |
+|---|-------------|--------|--------|
+| 1 | FriendsService + FriendsController | `feature/friends-service` | Inprogress |
+| 2 | PostReportService + PostReportsController | `feature/postreports-service` | Inprogress |
+| 3 | SignalR Hub (Notifications real-time) | `feature/signalr-hub` | Inprogress |
+| 4 | Unit Test — FriendsService, PostReportService | `test/friends-reports` | Inprogress |
+ 
 
 ---
+
+
+## Hướng Dẫn Implement — Flow Chuẩn
+
+> `Request → Controller → Service → DbContext → Database`
+ 
+Mỗi tính năng mới đều phải tạo đủ 5 thành phần theo thứ tự sau:
+
+### Bước 1 — Tạo DTOs
+ 
+**Vị trí:** `InteractHub.Core/DTOs/<Feature>/`
+ 
+```
+InteractHub.Core/
+└── DTOs/
+    └── Posts/
+        ├── CreatePostRequestDto.cs   ← dữ liệu nhận từ client
+        ├── UpdatePostRequestDto.cs   ← dữ liệu nhận từ client
+        └── PostResponseDto.cs        ← dữ liệu trả về client
+```
+ 
+Quy tắc đặt tên:
+- `*RequestDto` → nhận vào từ client
+- `*ResponseDto` → trả ra cho client
+- **Không bao giờ trả Entity trực tiếp ra ngoài**
+
+---
+
+### Bước 2 — Tạo Interface
+ 
+**Vị trí:** `InteractHub.Core/Interfaces/Services/`
+ 
+```
+InteractHub.Core/
+└── Interfaces/
+    └── Services/
+        └── IPostsService.cs
+```
+
+---
+
+### Bước 3 — Implement Service
+ 
+**Vị trí:** `InteractHub.Infrastructure/Services/`
+ 
+```
+InteractHub.Infrastructure/
+└── Services/
+    └── PostsService.cs
+```
+
+---
+
+### Bước 4 — Đăng ký Dependency Injection
+ 
+**Vị trí:** `InteractHub.API/Program.cs`
+ 
+Tìm phần `// ── Dependency Injection` và thêm vào:
+ 
+```csharp
+// InteractHub.API/Program.cs
+builder.Services.AddScoped<IPostsService, PostsService>();
+// mỗi service mới thêm 1 dòng tương tự
+```
+ 
+---
+
+### Bước 5 — Viết Controller
+ 
+**Vị trí:** `InteractHub.API/Controllers/`
+ 
+```
+InteractHub.API/
+└── Controllers/
+    └── PostsController.cs
+```
+
+---
+
+### Bước 6 — Viết Unit Test => Để sau viết
+ 
+**Vị trí:** `InteractHub.Tests/Services/`
+ 
+```
+InteractHub.Tests/
+└── Services/
+    └── PostsServiceTests.cs
+```
 
 ## Tài Liệu Liên Quan
 

@@ -159,13 +159,7 @@ dotnet run --project InteractHub.API
 ### 7. Mở Swagger UI
 
 ```
-https://localhost:5001/swagger
-```
-
-hoặc
-
-```
-http://localhost:5000/swagger
+https://localhost:5250/swagger
 ```
 
 ---

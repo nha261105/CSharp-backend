@@ -67,6 +67,7 @@ builder.Services.AddAuthentication(options =>
 
 // DEPENDENCY INJECTION
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+builder.Services.AddScoped<IStoriesService, StoriesService>();
 
 // CORS
 builder.Services.AddCors(options =>

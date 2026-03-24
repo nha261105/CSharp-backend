@@ -4,6 +4,7 @@
 bin/
 obj/
 out/
+document/
 
 # ========================
 # Visual Studio / VS Code

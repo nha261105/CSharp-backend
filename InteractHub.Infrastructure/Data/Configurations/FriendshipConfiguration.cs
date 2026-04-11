@@ -44,7 +44,7 @@ public class FriendshipConfiguration : IEntityTypeConfiguration<Friendship>
 
         builder.Property(f => f.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(f => f.UpdDatetime)
             .HasColumnName("upd_datetime");

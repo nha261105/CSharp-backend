@@ -34,7 +34,7 @@ public class PostLikeConfiguration : IEntityTypeConfiguration<PostLike>
 
         builder.Property(l => l.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(l => new { l.PostId, l.UserId })
             .IsUnique()

@@ -103,7 +103,7 @@ public class UserProfileConfiguration : IEntityTypeConfiguration<UserProfile>
 
         builder.Property(p => p.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(p => p.UpdDatetime)
             .HasColumnName("upd_datetime");

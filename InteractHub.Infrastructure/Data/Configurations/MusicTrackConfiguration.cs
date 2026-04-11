@@ -51,7 +51,7 @@ public class MusicTrackConfiguration : IEntityTypeConfiguration<MusicTrack>
 
         builder.Property(m => m.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(m => m.UpdDatetime)
             .HasColumnName("upd_datetime");

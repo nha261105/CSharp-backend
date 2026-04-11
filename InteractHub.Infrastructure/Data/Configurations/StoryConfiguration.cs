@@ -39,7 +39,7 @@ public class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.Property(s => s.CaptionFormat)
             .HasColumnName("caption_format")
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text");
 
         builder.Property(s => s.BgColor)
             .HasColumnName("bg_color")
@@ -98,7 +98,7 @@ public class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.Property(s => s.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(s => s.UserId)
             .HasDatabaseName("IX_Stories_user_id");

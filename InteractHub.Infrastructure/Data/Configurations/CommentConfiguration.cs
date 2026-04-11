@@ -33,7 +33,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
 
         builder.Property(c => c.ContentFormat)
             .HasColumnName("content_format")
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text");
 
         builder.Property(c => c.ImageUrl)
             .HasColumnName("image_url")
@@ -61,7 +61,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
 
         builder.Property(c => c.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(c => c.UpdDatetime)
             .HasColumnName("upd_datetime");

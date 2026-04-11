@@ -57,7 +57,7 @@ public class PostReportConfiguration : IEntityTypeConfiguration<PostReport>
 
         builder.Property(r => r.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(r => r.UpdDatetime)
             .HasColumnName("upd_datetime");

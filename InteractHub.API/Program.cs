@@ -6,14 +6,19 @@ using InteractHub.Infrastructure.Data;
 using InteractHub.Infrastructure.Data.Seeders;
 using InteractHub.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var allowedOriginsConfig = builder.Configuration["AllowedOrigins"];
+var allowedOrigins = (allowedOriginsConfig ?? "http://localhost:5173")
+    .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
 // CONNECT DB
-builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlServer(
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(
     builder.Configuration.GetConnectionString("DefaultConnection")
 ));
 
@@ -75,8 +80,15 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(builder.Configuration["AllowedOrigins"] ?? "http://localhost:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
+});
+
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
 });
 
 builder.Services.AddControllers();
@@ -85,9 +97,14 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Seed Data
+app.UseForwardedHeaders();
+
+// Ensure schema is ready before seeding on fresh cloud databases.
 using (var scope = app.Services.CreateScope())
 {
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+
     var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     await RoleSeeder.SeedAsync(roleManager, userManager);

@@ -34,7 +34,7 @@ public class StoryReactionConfiguration : IEntityTypeConfiguration<StoryReaction
 
         builder.Property(r => r.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(r => new { r.StoryId, r.UserId })
             .IsUnique()

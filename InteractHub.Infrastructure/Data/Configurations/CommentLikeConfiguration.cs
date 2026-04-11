@@ -34,7 +34,7 @@ public class CommentLikeConfiguration : IEntityTypeConfiguration<CommentLike>
 
         builder.Property(l => l.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(l => new { l.CommentId, l.UserId })
             .IsUnique()

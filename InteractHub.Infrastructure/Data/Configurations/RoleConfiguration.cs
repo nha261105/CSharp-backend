@@ -20,6 +20,6 @@ public class RoleConfiguration : IEntityTypeConfiguration<Role>
 
         builder.Property(r => r.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

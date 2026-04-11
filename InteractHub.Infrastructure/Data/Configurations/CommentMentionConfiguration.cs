@@ -35,7 +35,7 @@ public class CommentMentionConfiguration : IEntityTypeConfiguration<CommentMenti
 
         builder.Property(m => m.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasOne(m => m.MentionedUser)
             .WithMany()

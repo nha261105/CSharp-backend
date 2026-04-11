@@ -46,7 +46,7 @@ public class HashtagConfiguration : IEntityTypeConfiguration<Hashtag>
 
         builder.Property(h => h.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(h => h.UpdDatetime)
             .HasColumnName("upd_datetime");

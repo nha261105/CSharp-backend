@@ -32,7 +32,7 @@ public class StoryViewConfiguration : IEntityTypeConfiguration<StoryView>
 
         builder.Property(v => v.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasIndex(v => new { v.StoryId, v.ViewerId })
             .IsUnique()

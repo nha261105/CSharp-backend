@@ -33,7 +33,7 @@ public class PostHashtagConfiguration : IEntityTypeConfiguration<PostHashtag>
 
         builder.Property(ph => ph.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasOne(ph => ph.Hashtag)
             .WithMany(h => h.PostHashtags)

@@ -64,6 +64,6 @@ public class PostMediaConfiguration : IEntityTypeConfiguration<PostMedia>
 
         builder.Property(m => m.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
     }
 }

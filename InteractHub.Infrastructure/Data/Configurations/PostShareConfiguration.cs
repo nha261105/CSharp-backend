@@ -38,7 +38,7 @@ public class PostShareConfiguration : IEntityTypeConfiguration<PostShare>
 
         builder.Property(s => s.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.HasOne(s => s.User)
             .WithMany(u => u.PostShares)

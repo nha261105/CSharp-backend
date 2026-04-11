@@ -21,11 +21,11 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
 
         builder.Property(p => p.Content)
             .HasColumnName("content")
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text");
 
         builder.Property(p => p.ContentFormat)
             .HasColumnName("content_format")
-            .HasColumnType("nvarchar(max)");
+            .HasColumnType("text");
 
         builder.Property(p => p.PostType)
             .HasColumnName("post_type")
@@ -104,7 +104,7 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
 
         builder.Property(p => p.RegDatetime)
             .HasColumnName("reg_datetime")
-            .HasDefaultValueSql("GETDATE()");
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
         builder.Property(p => p.UpdDatetime)
             .HasColumnName("upd_datetime");

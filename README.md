@@ -33,7 +33,7 @@ InteractHub.Core → Microsoft.AspNetCore.Identity.EntityFrameworkCore
 InteractHub.Infrastructure → Azure.Storage.Blobs
 InteractHub.Infrastructure → Microsoft.AspNetCore.Identity.EntityFrameworkCore
 InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.Design
-InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.SqlServer
+InteractHub.Infrastructure → Npgsql.EntityFrameworkCore.PostgreSQL
 InteractHub.Infrastructure → Microsoft.EntityFrameworkCore.Tools
 
 InteractHub.Tests → coverlet.collector
@@ -54,7 +54,7 @@ InteractHub.Tests → xunit.runner.visualstudio
 | -------------- | ------------------------------ |
 | Framework      | ASP.NET Core 8.0               |
 | ORM            | Entity Framework Core 8.0      |
-| Database       | SQL Server                     |
+| Database       | PostgreSQL                     |
 | Authentication | JWT + ASP.NET Core Identity    |
 | Real-time      | SignalR                        |
 | Storage        | Azure Blob Storage             |
@@ -68,42 +68,63 @@ InteractHub.Tests → xunit.runner.visualstudio
 ## Yêu Cầu Hệ Thống
 
 - [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker Desktop](https://www.docker.com/products/docker-desktop) (để chạy SQL Server)
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) (để chạy PostgreSQL)
 - Visual Studio 2022 / VS Code / Rider
 
 ---
 
 ## Hướng Dẫn Chạy Local
 
-### 1. Clone repo
+### Flow nhanh cho team
+
+1. Clone repo về máy.
+2. Khởi động PostgreSQL:
 
 ```bash
-git clone https://github.com/<your-org>/interacthub-backend.git
-cd interacthub-backend
+docker compose up --build -d postgres
 ```
 
-### 2. Khởi động SQL Server bằng Docker
+3. Tạo file `InteractHub.API/appsettings.Development.json` nếu máy bạn chưa có. File này phải trỏ tới:
+
+```json
+"Host=localhost;Port=5433;Database=interacthubdb;Username=postgres;Password=interacthub@123"
+```
+
+4. Restore packages và apply migration:
 
 ```bash
-docker-compose up -d
+dotnet restore
+dotnet ef database update --project InteractHub.Infrastructure --startup-project InteractHub.API
 ```
 
-⏳ **Chờ khoảng 10-15 giây** để SQL Server khởi động hoàn toàn.
-
-Kiểm tra container đã chạy:
+5. Seed dữ liệu mẫu nếu cần demo/test local:
 
 ```bash
-docker ps
+docker exec -i interacthub-postgres psql -U postgres -d interacthubdb < InteractHub.Infrastructure/Data/Seeders/reset-and-seed.sql
 ```
 
-### 3. Tạo file cấu hình local
+6. Chạy API:
+
+```bash
+dotnet run --project InteractHub.API
+```
+
+7. Mở Swagger:
+
+```bash
+https://localhost:5250/swagger
+```
+
+**Ghi chú:** `RoleSeeder` sẽ tự seed role/admin khi app khởi động. SQL seed script chỉ dùng khi cần bộ dữ liệu mẫu đầy đủ.
+
+### Cấu hình local mẫu
 
 Tạo file `InteractHub.API/appsettings.Development.json` (**file này đã bị gitignore**):
 
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=localhost,1433;Database=InteractHubDB;User Id=sa;Password=interacthub@123;TrustServerCertificate=True;"
+    "DefaultConnection": "Host=localhost;Port=5433;Database=interacthubdb;Username=postgres;Password=interacthub@123"
   },
   "JwtSettings": {
     "SecretKey": "interacthub-super-secret-key-minimum-32-chars!",
@@ -127,40 +148,7 @@ Tạo file `InteractHub.API/appsettings.Development.json` (**file này đã bị
 }
 ```
 
-**Note:** Password SQL Server là `interacthub@123` (viết thường, khớp với docker-compose.yml)
-
-### 4. Khôi phục packages
-
-```bash
-dotnet restore
-```
-
-### 5. Chạy Database Migration
-
-```bash
-dotnet ef database update \
-  --project InteractHub.Infrastructure \
-  --startup-project InteractHub.API
-```
-
-### 6. Chạy API
-
-```bash
-dotnet run --project InteractHub.API
-```
-
-Hoặc build trước:
-
-```bash
-dotnet build InteractHub.sln
-dotnet run --project InteractHub.API
-```
-
-### 7. Mở Swagger UI
-
-```
-https://localhost:5250/swagger
-```
+**Note:** PostgreSQL dùng `postgres / interacthub@123`, khớp với `docker-compose.yml` và `.env`
 
 ---
 
@@ -169,14 +157,14 @@ https://localhost:5250/swagger
 ### Docker & Database
 
 ```bash
-# Bật SQL Server
-docker-compose up -d
+# Bật PostgreSQL
+docker compose up -d postgres
 
-# Tắt SQL Server
-docker-compose down
+# Tắt PostgreSQL
+docker compose down
 
-# Xem logs SQL Server
-docker logs interacthub-sqlserver
+# Xem logs PostgreSQL
+docker logs interacthub-postgres
 
 # Xem container đang chạy
 docker ps
@@ -234,13 +222,13 @@ dotnet test InteractHub.Tests/InteractHub.Tests.csproj
 
 ## Thông Tin Cấu Hình
 
-### SQL Server (Docker)
+### PostgreSQL (Docker)
 
 - **Host:** `localhost`
-- **Port:** `1433`
-- **Username:** `sa`
+- **Port:** `5433`
+- **Username:** `postgres`
 - **Password:** `interacthub@123`
-- **Database:** `InteractHubDB`
+- **Database:** `interacthubdb`
 
 ### JWT Settings
 
@@ -256,14 +244,14 @@ dotnet test InteractHub.Tests/InteractHub.Tests.csproj
 
 ## Troubleshooting
 
-### Lỗi kết nối SQL Server
+### Lỗi kết nối PostgreSQL
 
 ```bash
 # Kiểm tra container có chạy không
 docker ps
 
 # Xem logs
-docker logs interacthub-sqlserver
+docker logs interacthub-postgres
 
 # Restart container
 docker-compose restart
@@ -320,7 +308,7 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
 | # | Việc cần làm | Branch | Status |
 |---|-------------|--------|--------|
 | 0 | JWT Auth (Register, Login, Seed Roles) | `feature/auth-jwt` | Done |
-| 1 | Seed Data (Roles, Admin, MusicTracks, Hashtags) | `feature/seed-data` | Inprogress |
+| 1 | Seed Data (Roles, Admin, MusicTracks, Hashtags) | `feature/seed-data` | Done |
 | 2 | PostsService + PostsController | `feature/posts-service` | Inprogress |
 | 3 | NotificationService + NotificationsController | `feature/notifications-service` | Inprogress |
 | 4 | FileUploadService (Azure Blob) | `feature/file-upload-service` | Inprogress |

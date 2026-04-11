@@ -1,0 +1,70 @@
+# ========================
+# Build outputs
+# ========================
+bin/
+obj/
+out/
+document/
+# ========================
+# Visual Studio / VS Code
+# ========================
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+.idea/
+
+# ========================
+# ASP.NET Core
+# ========================
+appsettings.Development.json
+appsettings.Local.json
+appsettings.*.local.json
+*.env
+.env
+
+# ========================
+# Entity Framework
+# ========================
+# Không ignore Migrations — cần commit lên repo
+
+# ========================
+# Test & Coverage
+# ========================
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+lcov.info
+
+# ========================
+# NuGet
+# ========================
+*.nupkg
+*.snupkg
+.nuget/
+packages/
+project.lock.json
+
+# ========================
+# Azure / Publish
+# ========================
+*.pubxml
+*.publishsettings
+PublishProfiles/
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ========================
+# Logs
+# ========================
+*.log
+logs/

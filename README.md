@@ -308,7 +308,7 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
 | # | Việc cần làm | Branch | Status |
 |---|-------------|--------|--------|
 | 0 | JWT Auth (Register, Login, Seed Roles) | `feature/auth-jwt` | Done |
-| 1 | Seed Data (Roles, Admin, MusicTracks, Hashtags) | `feature/seed-data` | Inprogress |
+| 1 | Seed Data (Roles, Admin, MusicTracks, Hashtags) | `feature/seed-data` | Done |
 | 2 | PostsService + PostsController | `feature/posts-service` | Inprogress |
 | 3 | NotificationService + NotificationsController | `feature/notifications-service` | Inprogress |
 | 4 | FileUploadService (Azure Blob) | `feature/file-upload-service` | Inprogress |

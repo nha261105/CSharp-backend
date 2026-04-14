@@ -5,6 +5,7 @@ public class CommentMention
     public long MentionId { get; set; }
     public long CommentId { get; set; }
     public long MentionedUserId { get; set; }
+
     public int? StartPos { get; set; }
     public int? EndPos { get; set; }
 

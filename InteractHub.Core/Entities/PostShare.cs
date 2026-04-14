@@ -5,8 +5,8 @@ public class PostShare
     public long ShareId { get; set; }
     public long PostId { get; set; }
     public long UserId { get; set; }
-    public string? ShareContent { get; set; }
     public string Visibility { get; set; } = "Public";
+    public string? ShareContent { get; set; }
 
     // Audit
     public bool Delflg { get; set; } = false;

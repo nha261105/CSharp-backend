@@ -8,11 +8,11 @@ public class PostMention
     public int? StartPos { get; set; }
     public int? EndPos { get; set; }
 
-    // Audit
-    public bool Delflg { get; set; } = false;
-    public DateTime RegDatetime { get; set; } = DateTime.UtcNow;
-
     // Navigation properties
     public virtual Post Post { get; set; } = null!;
     public virtual User MentionedUser { get; set; } = null!;
+
+    // Audit
+    public bool Delflg { get; set; } = false;
+    public DateTime RegDatetime { get; set; } = DateTime.UtcNow;
 }

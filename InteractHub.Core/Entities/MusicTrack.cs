@@ -4,12 +4,12 @@ public class MusicTrack
 {
     public long MusicId { get; set; }
     public string Title { get; set; } = string.Empty;
-    public string? Artist { get; set; }
     public string AudioUrl { get; set; } = string.Empty;
-    public string? ThumbnailUrl { get; set; }
-    public int? DurationSec { get; set; }
     public bool IsLicensed { get; set; } = true;
     public string Source { get; set; } = "Internal";
+    public string? Artist { get; set; }
+    public string? ThumbnailUrl { get; set; }
+    public int? DurationSec { get; set; }
 
     // Audit
     public bool Delflg { get; set; } = false;

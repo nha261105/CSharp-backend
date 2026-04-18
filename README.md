@@ -328,7 +328,7 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
 | # | Việc cần làm | Branch | Status |
 |---|-------------|--------|--------|
 | 1 | FriendsService + FriendsController | `feature/friends-service` | Done |
-| 2 | PostReportService + PostReportsController | `feature/postreports-service` | Inprogress |
+| 2 | PostReportService + PostReportsController | `feature/postreports-service` | Done |
 | 3 | SignalR Hub (Notifications real-time) | `feature/signalr-hub` | Inprogress |
 | 4 | Unit Test — FriendsService, PostReportService | `test/friends-reports` | Inprogress |
  

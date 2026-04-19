@@ -7,34 +7,25 @@ public class UserProfile
 
     // FK đến User (1:1)
     public long UserId { get; set; }
+    public int FollowerCount { get; set; } = 0;
+    public int FollowingCount { get; set; } = 0;
+    public int PostCount { get; set; } = 0;
+    public int FriendCount { get; set; } = 0;
+    public string PrivacyPosts { get; set; } = "Public";
+    public string PrivacyFriends { get; set; } = "Public";
+    public string PrivacyPhotos { get; set; } = "Public";
+    public bool NotificationEmailFlg { get; set; } = true;
+    public bool NotificationPushFlg { get; set; } = true;
 
-    // Extended info
     public string? RelationshipStatus { get; set; }
     public string? WorkPlace { get; set; }
     public string? Position { get; set; }
     public string? Education { get; set; }
     public string? Hometown { get; set; }
     public string? CurrentCity { get; set; }
-
-    // Social links
     public string? FacebookLink { get; set; }
     public string? InstagramLink { get; set; }
     public string? TwitterLink { get; set; }
-
-    // Stats counters
-    public int FollowerCount { get; set; } = 0;
-    public int FollowingCount { get; set; } = 0;
-    public int PostCount { get; set; } = 0;
-    public int FriendCount { get; set; } = 0;
-
-    // Privacy settings
-    public string PrivacyPosts { get; set; } = "Public";
-    public string PrivacyFriends { get; set; } = "Public";
-    public string PrivacyPhotos { get; set; } = "Public";
-
-    // Notification settings
-    public bool NotificationEmailFlg { get; set; } = true;
-    public bool NotificationPushFlg { get; set; } = true;
 
     // Audit
     public bool Delflg { get; set; } = false;

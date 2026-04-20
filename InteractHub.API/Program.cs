@@ -74,6 +74,7 @@ builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IStoriesService, StoriesService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
+builder.Services.AddScoped<IPostReportService, PostReportService>();
 builder.Services.AddScoped<IPostService, PostsService>();
 // CORS
 builder.Services.AddCors(options =>
@@ -112,6 +113,8 @@ using (var scope = app.Services.CreateScope())
     var userManager = scope.ServiceProvider.GetRequiredService<UserManager<User>>();
     await RoleSeeder.SeedAsync(roleManager, userManager);
 }
+
+// SWAGGER UI
 
 if (app.Environment.IsDevelopment())
 {

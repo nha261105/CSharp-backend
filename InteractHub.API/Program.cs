@@ -114,6 +114,8 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeder.SeedAsync(roleManager, userManager);
 }
 
+// SWAGGER UI
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

@@ -309,7 +309,7 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
 |---|-------------|--------|--------|
 | 0 | JWT Auth (Register, Login, Seed Roles) | `feature/auth-jwt` | Done |
 | 1 | Seed Data (Roles, Admin, MusicTracks, Hashtags) | `feature/seed-data` | Done |
-| 2 | PostsService + PostsController | `feature/posts-service` | Inprogress |
+| 2 | PostsService + PostsController | `feature/posts-service` | Done |
 | 3 | NotificationService + NotificationsController | `feature/notifications-service` | Inprogress |
 | 4 | FileUploadService (Azure Blob) | `feature/file-upload-service` | Inprogress |
 | 5 | CI/CD + Azure Deployment | `feature/cicd` | Inprogress |
@@ -317,10 +317,10 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
 
 ### Thanh Hải
 
-| # | Việc cần làm | Branch | Status |
+| # | Việc cần làm | Branch | Status |  
 |---|-------------|--------|--------|
-| 2 | UserService + UsersController | `feature/users-service` | Inprogress |
-| 3 | StoriesService + StoriesController | `feature/stories-service` | Inprogress |
+| 2 | UserService + UsersController | `feature/users-service` | Done |
+| 3 | StoriesService + StoriesController | `feature/stories-service` | Done |
 | 4 | Unit Test — UserService, StoriesService | `test/users-stories` | Inprogress |
 
 ### Gia Hân

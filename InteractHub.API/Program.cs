@@ -75,6 +75,7 @@ builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IStoriesService, StoriesService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IPostReportService, PostReportService>();
+builder.Services.AddScoped<IPostService, PostsService>();
 // CORS
 builder.Services.AddCors(options =>
 {

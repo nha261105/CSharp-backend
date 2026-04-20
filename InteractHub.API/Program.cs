@@ -115,11 +115,14 @@ using (var scope = app.Services.CreateScope())
 }
 
 // SWAGGER UI
-
-if (app.Environment.IsDevelopment())
+if (true)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+        c.RoutePrefix = "docs";
+    });
 }
 
 app.UseHttpsRedirection();

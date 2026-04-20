@@ -112,7 +112,13 @@ dotnet run --project InteractHub.API
 7. Mở Swagger:
 
 ```bash
-https://localhost:5250/swagger
+https://localhost:5250/docs
+```
+
+Deploy (Render):
+
+```bash
+https://csharp-backend.onrender.com/docs
 ```
 
 **Ghi chú:** `RoleSeeder` sẽ tự seed role/admin khi app khởi động. SQL seed script chỉ dùng khi cần bộ dữ liệu mẫu đầy đủ.
@@ -288,7 +294,7 @@ Thay đổi port trong `InteractHub.API/Properties/launchSettings.json`
 
 ## API Endpoints
 
-Xem đầy đủ tại Swagger UI sau khi chạy project: `/swagger`
+Xem đầy đủ tại Swagger UI sau khi chạy project: `/docs`
 
 | Controller              | Base Route           |
 | ----------------------- | -------------------- |

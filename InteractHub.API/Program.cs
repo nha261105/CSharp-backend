@@ -114,10 +114,15 @@ using (var scope = app.Services.CreateScope())
     await RoleSeeder.SeedAsync(roleManager, userManager);
 }
 
-if (app.Environment.IsDevelopment())
+// SWAGGER UI
+if (true)
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API v1");
+        c.RoutePrefix = "docs";
+    });
 }
 
 app.UseHttpsRedirection();

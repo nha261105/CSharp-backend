@@ -20,5 +20,5 @@ public interface IUsersService
     Task<string?> UpdateAvatarAsync(long userId, string avatarUrl);
 
     // PUT /api/users/{id}/cover
-    Task<string?> UpdateCoverPhotoAsync(long userId, string coverUrl);
+    Task<string?> UpdateCoverPhotoAsync(long userId, string coverUrl)   ;
 }

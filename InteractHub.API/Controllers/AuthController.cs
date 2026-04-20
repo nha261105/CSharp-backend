@@ -2,8 +2,10 @@ using InteractHub.Core.DTOs.Auth;
 using InteractHub.Core.Entities;
 using InteractHub.Core.Helpers;
 using InteractHub.Core.Interfaces.Services;
+using InteractHub.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace InteractHub.API.Controllers;
@@ -16,13 +18,20 @@ public class AuthController : ControllerBase
     private readonly SignInManager<User> _signInManager;
     private readonly IJwtTokenService _jwtTokenService;
     private readonly JwtSettings _jwtSettings;
+    private readonly AppDbContext _dbContext;
 
-    public AuthController(UserManager<User> userManager,SignInManager<User> signInManager,IJwtTokenService jwtTokenService, IOptions<JwtSettings> jwtSettings)
+    public AuthController(
+        UserManager<User> userManager,
+        SignInManager<User> signInManager,
+        IJwtTokenService jwtTokenService,
+        IOptions<JwtSettings> jwtSettings,
+        AppDbContext dbContext)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _jwtTokenService = jwtTokenService;
         _jwtSettings = jwtSettings.Value;
+        _dbContext = dbContext;
     }
 
     [HttpPost("register")]
@@ -96,8 +105,10 @@ public class AuthController : ControllerBase
             return Unauthorized(new {message = "Email hoặc mật khẩu ko hợp lệ"});
         }
 
-        user.LastLoginDateTime = DateTime.Now;
-        await _userManager.UpdateAsync(user);
+        await _dbContext.Users
+            .Where(u => u.Id == user.Id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.LastLoginDateTime, DateTime.UtcNow));
 
         var roles = await _userManager.GetRolesAsync(user);
         var token = _jwtTokenService.GenerateToken(user,roles);

@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-
 var builder = WebApplication.CreateBuilder(args);
 
 var allowedOriginsConfig = builder.Configuration["AllowedOrigins"];
@@ -74,7 +73,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IStoriesService, StoriesService>();
-
+builder.Services.AddScoped<IFriendsService, FriendsService>();
+builder.Services.AddScoped<IPostReportService, PostReportService>();
+builder.Services.AddScoped<IPostService, PostsService>();
 // CORS
 builder.Services.AddCors(options =>
 {

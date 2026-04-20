@@ -6,8 +6,8 @@ public class Friendship
     public long RequesterId { get; set; }
     public long AddresseeId { get; set; }
     public string Status { get; set; } = "Pending";
-    public long? ActionUserId { get; set; }
     public bool IsBlocked { get; set; } = false;
+    public long? ActionUserId { get; set; }
     public long? BlockedById { get; set; }
 
     // Audit

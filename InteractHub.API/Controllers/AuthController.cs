@@ -3,6 +3,7 @@ using InteractHub.Core.Entities;
 using InteractHub.Core.Helpers;
 using InteractHub.Core.Interfaces.Services;
 using InteractHub.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,7 @@ namespace InteractHub.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
+[AllowAnonymous]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<User> _userManager;
@@ -37,21 +39,28 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequestDto dto)
     {
-        if(await _userManager.FindByEmailAsync(dto.Email) != null)
+        var email = dto.Email.Trim();
+        var username = dto.Username.Trim();
+        var fullname = dto.Fullname.Trim();
+        var phoneNumber = string.IsNullOrWhiteSpace(dto.PhoneNumber)
+            ? null
+            : dto.PhoneNumber.Trim();
+
+        if(await _userManager.FindByEmailAsync(email) != null)
         {
             return BadRequest(new {message = "Email đã được sử dụng"});
         }
-        if(await _userManager.FindByNameAsync(dto.Username) != null)
+        if(await _userManager.FindByNameAsync(username) != null)
         {
             return BadRequest(new {message = "User đã tồn tại"});
         }
 
         var user = new User
         {
-            UserName = dto.Username,
-            Email = dto.Email,
-            Fullname = dto.Fullname,
-            PhoneNumber = dto.PhoneNumber,
+            UserName = username,
+            Email = email,
+            Fullname = fullname,
+            PhoneNumber = phoneNumber,
             IsActive = true,
         };
 
@@ -61,7 +70,14 @@ public class AuthController : ControllerBase
             return BadRequest(new {errors = res.Errors.Select(e => e.Description)});
         }
 
-        await _userManager.AddToRoleAsync(user, "User");
+        var addRoleResult = await _userManager.AddToRoleAsync(user, "User");
+        if(!addRoleResult.Succeeded)
+        {
+            // Roll back created account to avoid an active user without required default role.
+            await _userManager.DeleteAsync(user);
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new {errors = addRoleResult.Errors.Select(e => e.Description)});
+        }
 
         var roles = await _userManager.GetRolesAsync(user);
         var token = _jwtTokenService.GenerateToken(user,roles);
@@ -80,7 +96,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
-        var user = await _userManager.FindByEmailAsync(dto.Email);
+        var email = dto.Email.Trim();
+
+        var user = await _userManager.FindByEmailAsync(email);
         if(user == null)
         {
             return Unauthorized(new {message = "user không tồn tại"});

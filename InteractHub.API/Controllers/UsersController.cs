@@ -1,11 +1,13 @@
 using InteractHub.Core.DTOs.Users;
 using InteractHub.Core.Interfaces.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InteractHub.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
+[Authorize]
 public class UsersController : ControllerBase
 {
     private readonly IUsersService _usersService;

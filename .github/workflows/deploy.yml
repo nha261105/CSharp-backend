@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      - feature/notifications-service   # tạm thời để test, xóa sau khi merge
+
 
 env:
   REGISTRY: ghcr.io

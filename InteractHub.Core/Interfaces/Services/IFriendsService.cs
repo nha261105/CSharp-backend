@@ -11,5 +11,9 @@ namespace InteractHub.Core.Interfaces.Services
         Task<bool> UnfriendOrCancelRequestAsync(long currentUserId, UnfriendRequestDto dto);
         Task<bool> BlockUserAsync(long currentUserId, BlockUserRequestDto dto);
         Task<(bool Success, string Message)> UnblockUserAsync(long currentUserId, long targetUserId);
+        Task<List<FriendResponseDto>> GetFriendsListAsync(long currentUserId);
+        Task<List<FriendResponseDto>> GetPendingRequestsAsync(long currentUserId);
+        Task<List<MutualFriendResponseDto>> GetMutualFriendsDetailAsync(long currentUserId, long targetUserId);
+        Task<List<BlockedUserResponseDto>> GetBlockedListAsync(long currentUserId);
     }
 }

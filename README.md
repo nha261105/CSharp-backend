@@ -87,7 +87,7 @@ docker compose up --build -d postgres
 3. Tạo file `InteractHub.API/appsettings.Development.json` nếu máy bạn chưa có. File này phải trỏ tới:
 
 ```json
-"Host=localhost;Port=5433;Database=interacthubdb;Username=postgres;Password=interacthub@123"
+"Server=sqlserver,1433;Database=InteractHubDb;User Id=sa;Password=interacthub@123A;TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True"
 ```
 
 4. Restore packages và apply migration:
@@ -130,7 +130,7 @@ Tạo file `InteractHub.API/appsettings.Development.json` (**file này đã bị
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5433;Database=interacthubdb;Username=postgres;Password=interacthub@123"
+    "DefaultConnection": "Server=sqlserver,1433;Database=InteractHubDb;User Id=sa;Password=interacthub@123A;TrustServerCertificate=True;Encrypt=False;MultipleActiveResultSets=True"
   },
   "JwtSettings": {
     "SecretKey": "interacthub-super-secret-key-minimum-32-chars!",
@@ -152,9 +152,8 @@ Tạo file `InteractHub.API/appsettings.Development.json` (**file này đã bị
   "AllowedHosts": "*",
   "AllowedOrigins": "http://localhost:5173"
 }
-```
 
-**Note:** PostgreSQL dùng `postgres / interacthub@123`, khớp với `docker-compose.yml` và `.env`
+```
 
 ---
 
@@ -163,14 +162,14 @@ Tạo file `InteractHub.API/appsettings.Development.json` (**file này đã bị
 ### Docker & Database
 
 ```bash
-# Bật PostgreSQL
-docker compose up -d postgres
+# Bật SQLSERVER
+docker compose up -d sqlserver
 
-# Tắt PostgreSQL
+# Tắt SQLSERVER
 docker compose down
 
-# Xem logs PostgreSQL
-docker logs interacthub-postgres
+# Xem logs SQLSERVER
+docker logs interacthub-sqlserver
 
 # Xem container đang chạy
 docker ps
@@ -228,13 +227,13 @@ dotnet test InteractHub.Tests/InteractHub.Tests.csproj
 
 ## Thông Tin Cấu Hình
 
-### PostgreSQL (Docker)
+### SQLSERVER (Docker)
 
-- **Host:** `localhost`
-- **Port:** `5433`
-- **Username:** `postgres`
-- **Password:** `interacthub@123`
-- **Database:** `interacthubdb`
+- **Host:** `sqlserver`
+- **Port:** `1433`
+- **Username:** ``
+- **Password:** `interacthub@123A`
+- **Database:** `InteractHubDb`
 
 ### JWT Settings
 

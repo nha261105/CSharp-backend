@@ -1,13 +1,12 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace InteractHub.Infrastructure.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialSqlServer : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,13 +16,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    description = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    Name = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    description = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -35,35 +34,35 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    full_name = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: false),
-                    gender = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    date_of_birth = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    avatar_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    cover_photo_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    bio = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    website_url = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    location = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    is_active = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    is_private_account = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    last_login_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    NormalizedEmail = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
-                    EmailConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    PasswordHash = table.Column<string>(type: "text", nullable: true),
-                    SecurityStamp = table.Column<string>(type: "text", nullable: true),
-                    ConcurrencyStamp = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "text", nullable: true),
-                    PhoneNumberConfirmed = table.Column<bool>(type: "boolean", nullable: false),
-                    TwoFactorEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    LockoutEnd = table.Column<DateTimeOffset>(type: "timestamp with time zone", nullable: true),
-                    LockoutEnabled = table.Column<bool>(type: "boolean", nullable: false),
-                    AccessFailedCount = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    full_name = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: false),
+                    is_active = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    is_private_account = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    gender = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    date_of_birth = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    avatar_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    cover_photo_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    bio = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    website_url = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    location = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    last_login_datetime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    NormalizedEmail = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
+                    EmailConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
+                    TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
+                    LockoutEnabled = table.Column<bool>(type: "bit", nullable: false),
+                    AccessFailedCount = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -74,15 +73,15 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 name: "Hashtags",
                 columns: table => new
                 {
-                    hashtag_id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    tag_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    post_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    trending_score = table.Column<decimal>(type: "numeric(10,2)", nullable: false, defaultValue: 0m),
-                    is_trending = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    hashtag_id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    tag_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    post_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    trending_score = table.Column<decimal>(type: "decimal(10,2)", nullable: false, defaultValue: 0m),
+                    is_trending = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -94,17 +93,17 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     music_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    artist = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
-                    audio_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    thumbnail_url = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    duration_sec = table.Column<int>(type: "integer", nullable: true),
-                    is_licensed = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    source = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false, defaultValue: "Internal"),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    audio_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    is_licensed = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    source = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false, defaultValue: "Internal"),
+                    artist = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    thumbnail_url = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    duration_sec = table.Column<int>(type: "int", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -115,11 +114,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     RoleId = table.Column<long>(type: "bigint", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -136,11 +135,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 name: "AspNetUserClaims",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     UserId = table.Column<long>(type: "bigint", nullable: false),
-                    ClaimType = table.Column<string>(type: "text", nullable: true),
-                    ClaimValue = table.Column<string>(type: "text", nullable: true)
+                    ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -157,9 +156,9 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    ProviderKey = table.Column<string>(type: "text", nullable: false),
-                    ProviderDisplayName = table.Column<string>(type: "text", nullable: true),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
@@ -202,9 +201,9 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<long>(type: "bigint", nullable: false),
-                    LoginProvider = table.Column<string>(type: "text", nullable: false),
-                    Name = table.Column<string>(type: "text", nullable: false),
-                    Value = table.Column<string>(type: "text", nullable: true)
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -222,16 +221,16 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     friendship_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     requester_id = table.Column<long>(type: "bigint", nullable: false),
                     addressee_id = table.Column<long>(type: "bigint", nullable: false),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Pending"),
+                    status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Pending"),
+                    is_blocked = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     action_user_id = table.Column<long>(type: "bigint", nullable: true),
-                    is_blocked = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
                     blocked_by_id = table.Column<long>(type: "bigint", nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -267,18 +266,18 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     notification_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     recipient_id = table.Column<long>(type: "bigint", nullable: false),
+                    notification_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    is_read = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     sender_id = table.Column<long>(type: "bigint", nullable: true),
-                    notification_type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     reference_id = table.Column<long>(type: "bigint", nullable: true),
-                    reference_type = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    message = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    is_read = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    read_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    redirect_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    reference_type = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    message = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    read_datetime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    redirect_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -302,29 +301,29 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     profile_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
-                    relationship_status = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: true),
-                    work_place = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    position = table.Column<string>(type: "character varying(150)", maxLength: 150, nullable: true),
-                    education = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    hometown = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    current_city = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    facebook_link = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    instagram_link = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    twitter_link = table.Column<string>(type: "character varying(300)", maxLength: 300, nullable: true),
-                    follower_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    following_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    post_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    friend_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    privacy_posts = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
-                    privacy_friends = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
-                    privacy_photos = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
-                    notification_email_flg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    notification_push_flg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    follower_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    following_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    post_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    friend_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    privacy_posts = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
+                    privacy_friends = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
+                    privacy_photos = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
+                    notification_email_flg = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    notification_push_flg = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
+                    relationship_status = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
+                    work_place = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    position = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    education = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    hometown = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    current_city = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    facebook_link = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    instagram_link = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    twitter_link = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -342,31 +341,31 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     post_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
+                    post_type = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false, defaultValue: "Text"),
+                    visibility = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
+                    music_start_sec = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    like_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    comment_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    share_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    is_edited = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    is_pinned = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    is_reported = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    report_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    allow_comment = table.Column<bool>(type: "bit", nullable: false, defaultValue: true),
                     content = table.Column<string>(type: "text", nullable: true),
                     content_format = table.Column<string>(type: "text", nullable: true),
-                    post_type = table.Column<string>(type: "character varying(30)", maxLength: 30, nullable: false, defaultValue: "Text"),
-                    visibility = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
-                    location_name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    location_lat = table.Column<decimal>(type: "numeric(10,7)", nullable: true),
-                    location_lng = table.Column<decimal>(type: "numeric(10,7)", nullable: true),
-                    feeling = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
+                    location_name = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    location_lat = table.Column<decimal>(type: "decimal(10,7)", nullable: true),
+                    location_lng = table.Column<decimal>(type: "decimal(10,7)", nullable: true),
+                    feeling = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     original_post_id = table.Column<long>(type: "bigint", nullable: true),
                     background_music_id = table.Column<long>(type: "bigint", nullable: true),
-                    music_start_sec = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    music_end_sec = table.Column<int>(type: "integer", nullable: true),
-                    like_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    comment_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    share_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    is_edited = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    is_pinned = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    is_reported = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    report_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    allow_comment = table.Column<bool>(type: "boolean", nullable: false, defaultValue: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    music_end_sec = table.Column<int>(type: "int", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -396,28 +395,28 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     story_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
-                    media_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    media_type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    thumbnail_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    caption = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    media_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    media_type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    duration_sec = table.Column<int>(type: "int", nullable: false, defaultValue: 5),
+                    visibility = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Friends"),
+                    music_start_sec = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    view_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    reaction_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    expire_datetime = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    is_expired = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    is_highlighted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    thumbnail_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    caption = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
                     caption_format = table.Column<string>(type: "text", nullable: true),
-                    bg_color = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
-                    font_style = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
-                    duration_sec = table.Column<int>(type: "integer", nullable: false, defaultValue: 5),
-                    visibility = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Friends"),
+                    bg_color = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true),
+                    font_style = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
                     background_music_id = table.Column<long>(type: "bigint", nullable: true),
-                    music_start_sec = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    music_end_sec = table.Column<int>(type: "integer", nullable: true),
-                    view_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    reaction_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    expire_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    is_expired = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    is_highlighted = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    highlight_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    music_end_sec = table.Column<int>(type: "int", nullable: true),
+                    highlight_name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -441,20 +440,20 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     comment_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
+                    content = table.Column<string>(type: "nvarchar(2000)", maxLength: 2000, nullable: false),
+                    like_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    reply_count = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    is_edited = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    is_reported = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
                     parent_comment_id = table.Column<long>(type: "bigint", nullable: true),
-                    content = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
                     content_format = table.Column<string>(type: "text", nullable: true),
-                    image_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    like_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    reply_count = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    is_edited = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    is_reported = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    image_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -484,11 +483,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     post_hashtag_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
-                    hashtag_id = table.Column<int>(type: "integer", nullable: false),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    hashtag_id = table.Column<int>(type: "int", nullable: false),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -512,12 +511,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     like_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
-                    reaction_type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Like"),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    reaction_type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Like"),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -541,20 +540,20 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     media_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
-                    media_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    media_type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    thumbnail_url = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    file_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    file_size_kb = table.Column<int>(type: "integer", nullable: true),
-                    width_px = table.Column<int>(type: "integer", nullable: true),
-                    height_px = table.Column<int>(type: "integer", nullable: true),
-                    duration_seconds = table.Column<int>(type: "integer", nullable: true),
-                    sort_order = table.Column<int>(type: "integer", nullable: false, defaultValue: 0),
-                    processing_status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Ready"),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    media_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    media_type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    sort_order = table.Column<int>(type: "int", nullable: false, defaultValue: 0),
+                    processing_status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Ready"),
+                    thumbnail_url = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    file_name = table.Column<string>(type: "nvarchar(255)", maxLength: 255, nullable: true),
+                    file_size_kb = table.Column<int>(type: "int", nullable: true),
+                    width_px = table.Column<int>(type: "int", nullable: true),
+                    height_px = table.Column<int>(type: "int", nullable: true),
+                    duration_seconds = table.Column<int>(type: "int", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -572,13 +571,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     mention_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
                     mentioned_user_id = table.Column<long>(type: "bigint", nullable: false),
-                    start_pos = table.Column<int>(type: "integer", nullable: true),
-                    end_pos = table.Column<int>(type: "integer", nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    start_pos = table.Column<int>(type: "int", nullable: true),
+                    end_pos = table.Column<int>(type: "int", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -602,19 +601,19 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     report_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
                     reporter_id = table.Column<long>(type: "bigint", nullable: false),
-                    reason = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    status = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Pending"),
+                    reason = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Pending"),
+                    description = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
                     reviewed_by_id = table.Column<long>(type: "bigint", nullable: true),
-                    review_note = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
-                    action_taken = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
-                    review_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
-                    upd_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                    review_note = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: true),
+                    action_taken = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    review_datetime = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP"),
+                    upd_datetime = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -644,13 +643,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     share_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     post_id = table.Column<long>(type: "bigint", nullable: false),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
-                    share_content = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: true),
-                    visibility = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    visibility = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Public"),
+                    share_content = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -674,12 +673,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     reaction_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     story_id = table.Column<long>(type: "bigint", nullable: false),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
-                    reaction_type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Like"),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    reaction_type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Like"),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -703,12 +702,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     view_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     story_id = table.Column<long>(type: "bigint", nullable: false),
                     viewer_id = table.Column<long>(type: "bigint", nullable: false),
-                    view_duration = table.Column<int>(type: "integer", nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    view_duration = table.Column<int>(type: "int", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -732,12 +731,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     like_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     comment_id = table.Column<long>(type: "bigint", nullable: false),
                     user_id = table.Column<long>(type: "bigint", nullable: false),
-                    reaction_type = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false, defaultValue: "Like"),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    reaction_type = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false, defaultValue: "Like"),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -761,13 +760,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 columns: table => new
                 {
                     mention_id = table.Column<long>(type: "bigint", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                        .Annotation("SqlServer:Identity", "1, 1"),
                     comment_id = table.Column<long>(type: "bigint", nullable: false),
                     mentioned_user_id = table.Column<long>(type: "bigint", nullable: false),
-                    start_pos = table.Column<int>(type: "integer", nullable: true),
-                    end_pos = table.Column<int>(type: "integer", nullable: true),
-                    delflg = table.Column<bool>(type: "boolean", nullable: false, defaultValue: false),
-                    reg_datetime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
+                    start_pos = table.Column<int>(type: "int", nullable: true),
+                    end_pos = table.Column<int>(type: "int", nullable: true),
+                    delflg = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    reg_datetime = table.Column<DateTime>(type: "datetime2", nullable: false, defaultValueSql: "CURRENT_TIMESTAMP")
                 },
                 constraints: table =>
                 {
@@ -795,7 +794,8 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 name: "RoleNameIndex",
                 table: "AspNetRoles",
                 column: "NormalizedName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserClaims_UserId",
@@ -821,7 +821,8 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 name: "UserNameIndex",
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
-                unique: true);
+                unique: true,
+                filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CommentLikes_user_id",

@@ -3,17 +3,17 @@ using System;
 using InteractHub.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
 namespace InteractHub.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260411102013_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20260422162732_InitialSqlServer")]
+    partial class InitialSqlServer
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,9 +21,9 @@ namespace InteractHub.Infrastructure.Data.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
-                .HasAnnotation("Relational:MaxIdentifierLength", 63);
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
-            NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("InteractHub.Core.Entities.Comment", b =>
                 {
@@ -32,12 +32,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("comment_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("CommentId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("CommentId"));
 
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
+                        .HasColumnType("nvarchar(2000)")
                         .HasColumnName("content");
 
                     b.Property<string>("ContentFormat")
@@ -46,30 +46,30 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<string>("ImageUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("image_url");
 
                     b.Property<bool>("IsEdited")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_edited");
 
                     b.Property<bool>("IsReported")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_reported");
 
                     b.Property<int>("LikeCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("like_count");
 
@@ -83,18 +83,18 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("ReplyCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("reply_count");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.Property<long>("UserId")
@@ -122,7 +122,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("like_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("LikeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LikeId"));
 
                     b.Property<long>("CommentId")
                         .HasColumnType("bigint")
@@ -130,7 +130,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
@@ -138,13 +138,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Like")
                         .HasColumnName("reaction_type");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -170,7 +170,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("mention_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("MentionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MentionId"));
 
                     b.Property<long>("CommentId")
                         .HasColumnType("bigint")
@@ -178,12 +178,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<int?>("EndPos")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("end_pos");
 
                     b.Property<long>("MentionedUserId")
@@ -192,12 +192,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("StartPos")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("start_pos");
 
                     b.HasKey("MentionId");
@@ -216,7 +216,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("friendship_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("FriendshipId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("FriendshipId"));
 
                     b.Property<long?>("ActionUserId")
                         .HasColumnType("bigint")
@@ -232,19 +232,19 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<bool>("IsBlocked")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_blocked");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -256,12 +256,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Pending")
                         .HasColumnName("status");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.HasKey("FriendshipId");
@@ -287,39 +287,39 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 {
                     b.Property<int>("HashtagId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("hashtag_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("HashtagId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HashtagId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<bool>("IsTrending")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_trending");
 
                     b.Property<int>("PostCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("post_count");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("TagName")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("tag_name");
 
                     b.Property<decimal>("TrendingScore")
@@ -329,7 +329,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnName("trending_score");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.HasKey("HashtagId");
@@ -351,38 +351,38 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("music_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("MusicId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MusicId"));
 
                     b.Property<string>("Artist")
                         .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
+                        .HasColumnType("nvarchar(150)")
                         .HasColumnName("artist");
 
                     b.Property<string>("AudioUrl")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("audio_url");
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<int?>("DurationSec")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("duration_sec");
 
                     b.Property<bool>("IsLicensed")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true)
                         .HasColumnName("is_licensed");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -390,23 +390,23 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasDefaultValue("Internal")
                         .HasColumnName("source");
 
                     b.Property<string>("ThumbnailUrl")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("thumbnail_url");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("title");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.HasKey("MusicId");
@@ -421,33 +421,33 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("notification_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("NotificationId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("NotificationId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<bool>("IsRead")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_read");
 
                     b.Property<string>("Message")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("message");
 
                     b.Property<string>("NotificationType")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("notification_type");
 
                     b.Property<DateTime?>("ReadDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("read_datetime");
 
                     b.Property<long>("RecipientId")
@@ -456,7 +456,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<string>("RedirectUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("redirect_url");
 
                     b.Property<long?>("ReferenceId")
@@ -465,12 +465,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<string>("ReferenceType")
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("reference_type");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -495,11 +495,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("post_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PostId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PostId"));
 
                     b.Property<bool>("AllowComment")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true)
                         .HasColumnName("allow_comment");
 
@@ -509,7 +509,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<int>("CommentCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("comment_count");
 
@@ -523,36 +523,36 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<string>("Feeling")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("feeling");
 
                     b.Property<bool>("IsEdited")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_edited");
 
                     b.Property<bool>("IsPinned")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_pinned");
 
                     b.Property<bool>("IsReported")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_reported");
 
                     b.Property<int>("LikeCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("like_count");
 
@@ -566,16 +566,16 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<string>("LocationName")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("location_name");
 
                     b.Property<int?>("MusicEndSec")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("music_end_sec");
 
                     b.Property<int>("MusicStartSec")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("music_start_sec");
 
@@ -587,30 +587,30 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasColumnType("nvarchar(30)")
                         .HasDefaultValue("Text")
                         .HasColumnName("post_type");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("ReportCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("report_count");
 
                     b.Property<int>("ShareCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("share_count");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.Property<long>("UserId")
@@ -621,7 +621,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Public")
                         .HasColumnName("visibility");
 
@@ -650,16 +650,16 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("post_hashtag_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("PostHashtagId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("PostHashtagId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<int>("HashtagId")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("hashtag_id");
 
                     b.Property<long>("PostId")
@@ -668,7 +668,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -690,11 +690,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("like_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("LikeId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LikeId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
@@ -706,13 +706,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Like")
                         .HasColumnName("reaction_type");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -738,41 +738,41 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("media_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("MediaId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MediaId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<int?>("DurationSeconds")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("duration_seconds");
 
                     b.Property<string>("FileName")
                         .HasMaxLength(255)
-                        .HasColumnType("character varying(255)")
+                        .HasColumnType("nvarchar(255)")
                         .HasColumnName("file_name");
 
                     b.Property<int?>("FileSizeKb")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("file_size_kb");
 
                     b.Property<int?>("HeightPx")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("height_px");
 
                     b.Property<string>("MediaType")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("media_type");
 
                     b.Property<string>("MediaUrl")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("media_url");
 
                     b.Property<long>("PostId")
@@ -783,29 +783,29 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Ready")
                         .HasColumnName("processing_status");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int>("SortOrder")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("sort_order");
 
                     b.Property<string>("ThumbnailUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("thumbnail_url");
 
                     b.Property<int?>("WidthPx")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("width_px");
 
                     b.HasKey("MediaId");
@@ -822,16 +822,16 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("mention_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("MentionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("MentionId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<int?>("EndPos")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("end_pos");
 
                     b.Property<long>("MentionedUserId")
@@ -844,12 +844,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<int?>("StartPos")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("start_pos");
 
                     b.HasKey("MentionId");
@@ -868,22 +868,22 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("report_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ReportId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ReportId"));
 
                     b.Property<string>("ActionTaken")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("action_taken");
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<string>("Description")
                         .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("nvarchar(1000)")
                         .HasColumnName("description");
 
                     b.Property<long>("PostId")
@@ -893,12 +893,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                     b.Property<string>("Reason")
                         .IsRequired()
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("reason");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -907,12 +907,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnName("reporter_id");
 
                     b.Property<DateTime?>("ReviewDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("review_datetime");
 
                     b.Property<string>("ReviewNote")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("review_note");
 
                     b.Property<long?>("ReviewedById")
@@ -923,12 +923,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Pending")
                         .HasColumnName("status");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.HasKey("ReportId");
@@ -949,11 +949,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("share_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ShareId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ShareId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
@@ -963,13 +963,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("ShareContent")
                         .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)")
+                        .HasColumnType("nvarchar(1000)")
                         .HasColumnName("share_content");
 
                     b.Property<long>("UserId")
@@ -980,7 +980,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Public")
                         .HasColumnName("visibility");
 
@@ -999,34 +999,34 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<string>("Description")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -1034,7 +1034,8 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.HasIndex("NormalizedName")
                         .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
 
                     b.ToTable("AspNetRoles", (string)null);
                 });
@@ -1046,7 +1047,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("story_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("StoryId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("StoryId"));
 
                     b.Property<long?>("BackgroundMusicId")
                         .HasColumnType("bigint")
@@ -1054,12 +1055,12 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<string>("BgColor")
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("bg_color");
 
                     b.Property<string>("Caption")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("caption");
 
                     b.Property<string>("CaptionFormat")
@@ -1068,79 +1069,79 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<int>("DurationSec")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(5)
                         .HasColumnName("duration_sec");
 
                     b.Property<DateTime>("ExpireDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("expire_datetime");
 
                     b.Property<string>("FontStyle")
                         .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                        .HasColumnType("nvarchar(50)")
                         .HasColumnName("font_style");
 
                     b.Property<string>("HighlightName")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)")
+                        .HasColumnType("nvarchar(100)")
                         .HasColumnName("highlight_name");
 
                     b.Property<bool>("IsExpired")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_expired");
 
                     b.Property<bool>("IsHighlighted")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_highlighted");
 
                     b.Property<string>("MediaType")
                         .IsRequired()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("media_type");
 
                     b.Property<string>("MediaUrl")
                         .IsRequired()
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("media_url");
 
                     b.Property<int?>("MusicEndSec")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("music_end_sec");
 
                     b.Property<int>("MusicStartSec")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("music_start_sec");
 
                     b.Property<int>("ReactionCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("reaction_count");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("ThumbnailUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("thumbnail_url");
 
                     b.Property<long>("UserId")
@@ -1149,7 +1150,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<int>("ViewCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("view_count");
 
@@ -1157,7 +1158,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Friends")
                         .HasColumnName("visibility");
 
@@ -1181,11 +1182,11 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("reaction_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ReactionId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ReactionId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
@@ -1193,13 +1194,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Like")
                         .HasColumnName("reaction_type");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -1229,17 +1230,17 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("view_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ViewId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ViewId"));
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
@@ -1248,7 +1249,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnName("story_id");
 
                     b.Property<int?>("ViewDuration")
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasColumnName("view_duration");
 
                     b.Property<long>("ViewerId")
@@ -1272,125 +1273,125 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
                     b.Property<string>("AvatarUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("avatar_url");
 
                     b.Property<string>("Bio")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("bio");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CoverPhotoUrl")
                         .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
+                        .HasColumnType("nvarchar(500)")
                         .HasColumnName("cover_photo_url");
 
                     b.Property<DateTime?>("DateOfBirth")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("date_of_birth");
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<string>("Fullname")
                         .IsRequired()
                         .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
+                        .HasColumnType("nvarchar(150)")
                         .HasColumnName("full_name");
 
                     b.Property<string>("Gender")
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasColumnName("gender");
 
                     b.Property<bool>("IsActive")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true)
                         .HasColumnName("is_active");
 
                     b.Property<bool>("IsPrivateAccount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("is_private_account");
 
                     b.Property<DateTime?>("LastLoginDateTime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("last_login_datetime");
 
                     b.Property<string>("Location")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("location");
 
                     b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("NormalizedUserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<DateTime>("RegDateTime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
+                        .HasColumnType("bit");
 
                     b.Property<DateTime?>("UpDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.Property<string>("UserName")
                         .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
+                        .HasColumnType("nvarchar(256)");
 
                     b.Property<string>("WebsiteUrl")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("website_url");
 
                     b.HasKey("Id");
@@ -1400,7 +1401,8 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.HasIndex("NormalizedUserName")
                         .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
                 });
@@ -1412,77 +1414,77 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint")
                         .HasColumnName("profile_id");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("ProfileId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("ProfileId"));
 
                     b.Property<string>("CurrentCity")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("current_city");
 
                     b.Property<bool>("Delflg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(false)
                         .HasColumnName("delflg");
 
                     b.Property<string>("Education")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("education");
 
                     b.Property<string>("FacebookLink")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("facebook_link");
 
                     b.Property<int>("FollowerCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("follower_count");
 
                     b.Property<int>("FollowingCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("following_count");
 
                     b.Property<int>("FriendCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("friend_count");
 
                     b.Property<string>("Hometown")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("hometown");
 
                     b.Property<string>("InstagramLink")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("instagram_link");
 
                     b.Property<bool>("NotificationEmailFlg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true)
                         .HasColumnName("notification_email_flg");
 
                     b.Property<bool>("NotificationPushFlg")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
+                        .HasColumnType("bit")
                         .HasDefaultValue(true)
                         .HasColumnName("notification_push_flg");
 
                     b.Property<string>("Position")
                         .HasMaxLength(150)
-                        .HasColumnType("character varying(150)")
+                        .HasColumnType("nvarchar(150)")
                         .HasColumnName("position");
 
                     b.Property<int>("PostCount")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
+                        .HasColumnType("int")
                         .HasDefaultValue(0)
                         .HasColumnName("post_count");
 
@@ -1490,7 +1492,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Public")
                         .HasColumnName("privacy_friends");
 
@@ -1498,7 +1500,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Public")
                         .HasColumnName("privacy_photos");
 
@@ -1506,28 +1508,28 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .IsRequired()
                         .ValueGeneratedOnAdd()
                         .HasMaxLength(20)
-                        .HasColumnType("character varying(20)")
+                        .HasColumnType("nvarchar(20)")
                         .HasDefaultValue("Public")
                         .HasColumnName("privacy_posts");
 
                     b.Property<DateTime>("RegDatetime")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("reg_datetime")
                         .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                     b.Property<string>("RelationshipStatus")
                         .HasMaxLength(30)
-                        .HasColumnType("character varying(30)")
+                        .HasColumnType("nvarchar(30)")
                         .HasColumnName("relationship_status");
 
                     b.Property<string>("TwitterLink")
                         .HasMaxLength(300)
-                        .HasColumnType("character varying(300)")
+                        .HasColumnType("nvarchar(300)")
                         .HasColumnName("twitter_link");
 
                     b.Property<DateTime?>("UpdDatetime")
-                        .HasColumnType("timestamp with time zone")
+                        .HasColumnType("datetime2")
                         .HasColumnName("upd_datetime");
 
                     b.Property<long>("UserId")
@@ -1536,7 +1538,7 @@ namespace InteractHub.Infrastructure.Data.Migrations
 
                     b.Property<string>("WorkPlace")
                         .HasMaxLength(200)
-                        .HasColumnType("character varying(200)")
+                        .HasColumnType("nvarchar(200)")
                         .HasColumnName("work_place");
 
                     b.HasKey("ProfileId");
@@ -1551,15 +1553,15 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("RoleId")
                         .HasColumnType("bigint");
@@ -1575,15 +1577,15 @@ namespace InteractHub.Infrastructure.Data.Migrations
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("int");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ClaimType")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
@@ -1598,13 +1600,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
@@ -1637,13 +1639,13 @@ namespace InteractHub.Infrastructure.Data.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
-                        .HasColumnType("text");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 

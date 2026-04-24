@@ -9,7 +9,7 @@ namespace InteractHub.API.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/friends")]
     public class FriendsController : ControllerBase
     {
         private readonly IFriendsService _friendsService;
@@ -71,6 +71,28 @@ namespace InteractHub.API.Controllers
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             return userIdClaim != null ? long.Parse(userIdClaim.Value) : 0;
+        }
+        [HttpGet("my-friends")]
+        public async Task<IActionResult> GetFriendsList()
+        {
+            return Ok(await _friendsService.GetFriendsListAsync(GetUserId()));
+        }
+
+        [HttpGet("pending-requests")]
+        public async Task<IActionResult> GetPendingRequests()
+        {
+            return Ok(await _friendsService.GetPendingRequestsAsync(GetUserId()));
+        }
+        [HttpGet("mutual-friends/{targetUserId}")]
+        public async Task<IActionResult> GetMutualFriendsDetail(long targetUserId)
+        {
+            return Ok(await _friendsService.GetMutualFriendsDetailAsync(GetUserId(), targetUserId));
+        }
+        [HttpGet("blocked-users")]
+        public async Task<IActionResult> GetBlockedList()
+        {
+            var result = await _friendsService.GetBlockedListAsync(GetUserId());
+            return Ok(result);
         }
     }
 }

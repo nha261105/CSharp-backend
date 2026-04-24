@@ -18,57 +18,65 @@ namespace InteractHub.Infrastructure.Services
         }
 
         public async Task<(bool Success, string Message)> SendFriendRequestAsync(long currentUserId, SendFriendRequestDto dto)
+{
+    if (currentUserId == dto.ReceiverId)
+        return (false, "Bạn không thể gửi lời mời kết bạn cho chính mình.");
+
+    var receiverExists = await _context.Users.AnyAsync(u => u.Id == dto.ReceiverId);
+    if (!receiverExists)
+        return (false, "Người dùng này không tồn tại.");
+
+    
+    var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
+        (f.RequesterId == currentUserId && f.AddresseeId == dto.ReceiverId) ||
+        (f.RequesterId == dto.ReceiverId && f.AddresseeId == currentUserId));
+
+    if (friendship != null)
+    {
+        
+        if (friendship.IsBlocked)
+            return (false, "Không thể gửi lời mời. Người dùng này đã bị chặn hoặc bạn đã bị họ chặn.");
+
+       
+        if (friendship.Delflg == false)
         {
-            if (currentUserId == dto.ReceiverId)
-                return (false, "Bạn không thể gửi lời mời kết bạn cho chính mình.");
-
-            var receiverExists = await _context.Users.AnyAsync(u => u.Id == dto.ReceiverId);
-            if (!receiverExists)
-                return (false, "Người dùng này không tồn tại.");
-
-            var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
-                (f.RequesterId == currentUserId && f.AddresseeId == dto.ReceiverId) ||
-                (f.RequesterId == dto.ReceiverId && f.AddresseeId == currentUserId));
-
-            if (friendship != null)
-            {
-                if (friendship.IsBlocked)
-                    return (false, "Không thể gửi lời mời. Người dùng này đã bị chặn hoặc bạn đã bị họ chặn.");
-
-                if (friendship.Delflg == false)
-                {
-                    if (friendship.Status == "Pending")
-                        return (false, "Lời mời kết bạn đã tồn tại.");
-                    
-                    if (friendship.Status == "Accepted")
-                        return (false, "Hai người đã là bạn bè.");
-                }
-
-                friendship.RequesterId = currentUserId;
-                friendship.AddresseeId = dto.ReceiverId;
-                friendship.Status = "Pending";
-                friendship.ActionUserId = currentUserId;
-                friendship.Delflg = false; 
-                friendship.UpdDatetime = DateTime.UtcNow;
-            }
-            else
-            {
-                friendship = new Friendship
-                {
-                    RequesterId = currentUserId,
-                    AddresseeId = dto.ReceiverId,
-                    Status = "Pending",
-                    ActionUserId = currentUserId,
-                    RegDatetime = DateTime.UtcNow,
-                    Delflg = false,
-                    IsBlocked = false
-                };
-                _context.Friendships.Add(friendship);
-            }
-
-            var result = await _context.SaveChangesAsync() > 0;
-            return result ? (true, "Gửi lời mời thành công.") : (false, "Lỗi hệ thống.");
+            if (friendship.Status == "Pending")
+                return (false, "Lời mời kết bạn đã tồn tại.");
+            
+            if (friendship.Status == "Accepted")
+                return (false, "Hai người đã là bạn bè.");
         }
+
+        friendship.RequesterId = currentUserId; 
+        friendship.AddresseeId = dto.ReceiverId;
+        friendship.Status = "Pending";
+        friendship.ActionUserId = currentUserId;
+        friendship.Delflg = false; 
+
+       
+        friendship.RegDatetime = DateTime.UtcNow; 
+        friendship.UpdDatetime = null;            
+    }
+    else
+    {
+       
+        friendship = new Friendship
+        {
+            RequesterId = currentUserId,
+            AddresseeId = dto.ReceiverId,
+            Status = "Pending",
+            ActionUserId = currentUserId,
+            RegDatetime = DateTime.UtcNow,
+            UpdDatetime = null, 
+            Delflg = false,
+            IsBlocked = false
+        };
+        _context.Friendships.Add(friendship);
+    }
+
+    var result = await _context.SaveChangesAsync() > 0;
+    return result ? (true, "Gửi lời mời thành công.") : (false, "Lỗi hệ thống khi lưu dữ liệu.");
+}
 
         public async Task<bool> AcceptFriendRequestAsync(long currentUserId, AcceptFriendRequestDto dto)
         {
@@ -122,49 +130,195 @@ namespace InteractHub.Infrastructure.Services
 
         public async Task<bool> BlockUserAsync(long currentUserId, BlockUserRequestDto dto)
         {
+            if (currentUserId == dto.TargetUserId) return false;
+
             var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
                 (f.RequesterId == currentUserId && f.AddresseeId == dto.TargetUserId) ||
                 (f.RequesterId == dto.TargetUserId && f.AddresseeId == currentUserId));
 
-            if (friendship == null)
+            if (friendship != null)
+            {
+                
+                if (friendship.IsBlocked && friendship.BlockedById == currentUserId) return true;
+
+                friendship.Status = "Blocked";
+                friendship.IsBlocked = true;
+                friendship.BlockedById = currentUserId; 
+                friendship.ActionUserId = currentUserId;
+                friendship.Delflg = true; 
+                friendship.UpdDatetime = DateTime.UtcNow;
+            }
+            else
             {
                 friendship = new Friendship
                 {
                     RequesterId = currentUserId,
                     AddresseeId = dto.TargetUserId,
+                    Status = "Blocked",
+                    IsBlocked = true,
+                    BlockedById = currentUserId,
+                    ActionUserId = currentUserId,
                     RegDatetime = DateTime.UtcNow,
-                    Delflg = false 
+                    Delflg = true 
                 };
                 _context.Friendships.Add(friendship);
             }
 
-            friendship.Status = "Blocked";
-            friendship.IsBlocked = true;
-            friendship.BlockedById = currentUserId;
-            friendship.ActionUserId = currentUserId;
-            friendship.Delflg = false; 
-            friendship.UpdDatetime = DateTime.UtcNow;
-
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<List<BlockedUserResponseDto>> GetBlockedListAsync(long currentUserId)
+        {
+           
+            var blockedFriendships = await _context.Friendships
+                .Include(f => f.Requester)
+                .Include(f => f.Addressee)
+                .Where(f => f.IsBlocked == true && f.BlockedById == currentUserId)
+                .ToListAsync();
 
+            return blockedFriendships.Select(f => {
+               
+                var targetUser = f.RequesterId == currentUserId ? f.Addressee : f.Requester;
+                return new BlockedUserResponseDto
+                {
+                    UserId = targetUser.Id,
+                    Fullname = targetUser.Fullname,
+                    AvatarUrl = targetUser.AvatarUrl
+                };
+            }).ToList();
+        }
         public async Task<(bool Success, string Message)> UnblockUserAsync(long currentUserId, long targetUserId)
         {
             var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
                 f.BlockedById == currentUserId &&
-                (f.RequesterId == targetUserId || f.AddresseeId == targetUserId));
+                ((f.RequesterId == targetUserId && f.AddresseeId == currentUserId) || 
+                (f.RequesterId == currentUserId && f.AddresseeId == targetUserId)) &&
+                f.IsBlocked == true);
 
             if (friendship == null)
-                return (false, "Bạn chưa chặn người này.");
+                return (false, "Người dùng này không nằm trong danh sách chặn của bạn.");
 
             friendship.IsBlocked = false;
             friendship.BlockedById = null;
-            friendship.Status = "Unblocked";
-            friendship.Delflg = true; 
+            friendship.Status = "None"; 
+            friendship.Delflg = true;  
             friendship.UpdDatetime = DateTime.UtcNow;
 
             var result = await _context.SaveChangesAsync() > 0;
             return result ? (true, "Đã gỡ chặn thành công.") : (false, "Lỗi cập nhật dữ liệu.");
+        }
+        private async Task<List<long>> GetFriendIdsAsync(long userId)
+        {
+            return await _context.Friendships
+                .Where(f => (f.RequesterId == userId || f.AddresseeId == userId) 
+                            && f.Status == "Accepted" && f.Delflg == false)
+                .Select(f => f.RequesterId == userId ? f.AddresseeId : f.RequesterId)
+                .ToListAsync();
+        }
+
+        private string GetRelativeTime(DateTime date)
+        {
+            var timeSpan = DateTime.UtcNow - date;
+            if (timeSpan.TotalMinutes < 1) return "Vừa xong";
+            if (timeSpan.TotalMinutes < 60) return $"{(int)timeSpan.TotalMinutes} phút trước";
+            if (timeSpan.TotalHours < 24) return $"{(int)timeSpan.TotalHours} giờ trước";
+            return $"{(int)timeSpan.TotalDays} ngày trước";
+        }
+
+        private async Task<List<MutualFriendResponseDto>> GetMutualFriendsInfoAsync(long currentUserId, List<long> mutualIds, int? takeCount = null)
+        {
+            if (mutualIds == null || !mutualIds.Any()) return new List<MutualFriendResponseDto>();
+
+            var myFriendIds = await GetFriendIdsAsync(currentUserId);
+            
+           
+            var query = _context.Users.Where(u => mutualIds.Contains(u.Id));
+            if (takeCount.HasValue) query = query.Take(takeCount.Value);
+
+            var users = await query.ToListAsync();
+            var result = new List<MutualFriendResponseDto>();
+
+            foreach (var u in users)
+            {
+                var theirFriendIds = await GetFriendIdsAsync(u.Id);
+                var commonIds = myFriendIds.Intersect(theirFriendIds).ToList();
+
+                result.Add(new MutualFriendResponseDto
+                {
+                    UserId = u.Id,
+                    Fullname = u.Fullname,
+                    AvatarUrl = u.AvatarUrl,
+                    MutualFriendsCount = commonIds.Count,
+                   
+                    TopMutualAvatars = await _context.Users
+                        .Where(sub => commonIds.Take(3).Contains(sub.Id))
+                        .Select(sub => sub.AvatarUrl)
+                        .ToListAsync()
+                });
+            }
+            return result;
+        }
+
+        public async Task<List<FriendResponseDto>> GetFriendsListAsync(long currentUserId)
+        {
+            var myFriendIds = await GetFriendIdsAsync(currentUserId);
+            var friendships = await _context.Friendships
+                .Include(f => f.Requester).Include(f => f.Addressee)
+                .Where(f => (f.RequesterId == currentUserId || f.AddresseeId == currentUserId) 
+                            && f.Status == "Accepted" && f.Delflg == false)
+                .ToListAsync();
+
+            var result = new List<FriendResponseDto>();
+            foreach (var f in friendships)
+            {
+                var targetUser = f.RequesterId == currentUserId ? f.Addressee : f.Requester;
+                var theirFriendIds = await GetFriendIdsAsync(targetUser.Id);
+                var mutualIds = myFriendIds.Intersect(theirFriendIds).ToList();
+
+                result.Add(new FriendResponseDto {
+                    UserId = targetUser.Id,
+                    FullName = targetUser.Fullname,
+                    AvatarUrl = targetUser.AvatarUrl,
+                    ActionDate = GetRelativeTime(f.UpdDatetime ?? f.RegDatetime),
+                    MutualFriendsCount = mutualIds.Count,
+                    TopMutualFriends = await GetMutualFriendsInfoAsync(currentUserId, mutualIds, 3)
+                });
+            }
+            return result;
+        }
+
+        public async Task<List<FriendResponseDto>> GetPendingRequestsAsync(long currentUserId)
+        {
+            var myFriendIds = await GetFriendIdsAsync(currentUserId);
+            var requests = await _context.Friendships
+                .Include(f => f.Requester)
+                .Where(f => f.AddresseeId == currentUserId && f.Status == "Pending" && f.Delflg == false)
+                .ToListAsync();
+
+            var result = new List<FriendResponseDto>();
+            foreach (var req in requests)
+            {
+                var theirFriendIds = await GetFriendIdsAsync(req.RequesterId);
+                var mutualIds = myFriendIds.Intersect(theirFriendIds).ToList();
+
+                result.Add(new FriendResponseDto {
+                    UserId = req.RequesterId,
+                    FullName = req.Requester.Fullname,
+                    AvatarUrl = req.Requester.AvatarUrl,
+                    ActionDate = GetRelativeTime(req.RegDatetime),
+                    MutualFriendsCount = mutualIds.Count,
+                    TopMutualFriends = await GetMutualFriendsInfoAsync(currentUserId, mutualIds, 3)
+                });
+            }
+            return result;
+        }
+
+        public async Task<List<MutualFriendResponseDto>> GetMutualFriendsDetailAsync(long currentUserId, long targetUserId)
+        {
+            var myFriendIds = await GetFriendIdsAsync(currentUserId);
+            var theirFriendIds = await GetFriendIdsAsync(targetUserId);
+            var mutualIds = myFriendIds.Intersect(theirFriendIds).ToList();
+
+            return await GetMutualFriendsInfoAsync(currentUserId, mutualIds);
         }
     }
 }

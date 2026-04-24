@@ -317,7 +317,7 @@ Xem đầy đủ tại Swagger UI sau khi chạy project: `/docs`
 | 2 | PostsService + PostsController | `feature/posts-service` | Done |
 | 3 | NotificationService + NotificationsController | `feature/notifications-service` | Inprogress |
 | 4 | FileUploadService (Azure Blob) | `feature/file-upload-service` | Inprogress |
-| 5 | CI/CD + Azure Deployment | `feature/cicd` | Inprogress |
+| 5 | CI/CD + Azure Deployment | `feature/cicd` | Done |
 
 
 ### Thanh Hải

@@ -54,6 +54,10 @@ builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("JwtSettings")
 );
 
+builder.Services.Configure<AzureBlobStorageSettings>(
+    builder.Configuration.GetSection("AzureBlobStorage")
+);
+
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("SecretKey is not configured");
 
@@ -85,6 +89,7 @@ builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IPostReportService, PostReportService>();
 builder.Services.AddScoped<IPostService, PostsService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
+builder.Services.AddScoped<IFileUploadService, FileUploadService>();
 // CORS
 builder.Services.AddCors(options =>
 {

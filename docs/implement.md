@@ -2,34 +2,7 @@
 
 Tài liệu này liệt kê những case chưa có đủ implementation hoặc còn thiếu một phần business logic trong codebase hiện tại.
 
-## 1. File upload end-to-end
-
-### Hiện trạng
-
-- Chưa có `FileUploadService`.
-- Chưa có controller upload riêng.
-- `UsersController` đang nhận `avatarUrl` và `coverUrl` trực tiếp thay vì upload file.
-- Chưa có luồng upload media cho post và story qua API riêng.
-
-### Cần làm
-
-1. Tạo interface `IFileUploadService` trong `InteractHub.Core/Interfaces/Services/`.
-2. Implement service dùng Azure Blob Storage trong `InteractHub.Infrastructure/Services/`.
-3. Tạo controller upload, ví dụ `api/uploads`.
-4. Thêm các endpoint tối thiểu:
-   - upload avatar
-   - upload cover photo
-   - upload post media
-   - upload story media
-5. Trả về URL file sau khi upload thành công.
-6. Validate định dạng file, dung lượng và quyền sở hữu dữ liệu.
-
-### Gợi ý thứ tự làm
-
-- Làm upload avatar/cover trước.
-- Sau đó mở rộng sang post/story media.
-
-## 2. SignalR notification real-time
+## SignalR notification real-time
 
 ### Hiện trạng
 

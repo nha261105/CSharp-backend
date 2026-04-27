@@ -82,6 +82,17 @@ Tài liệu này liệt kê các API đã có trong codebase hiện tại.
 | `PATCH` | `/api/notifications/{id}/read`    | Đánh dấu 1 notification đã đọc               | JWT  |
 | `PATCH` | `/api/notifications/read-all`     | Đánh dấu toàn bộ notification đã đọc         | JWT  |
 
+## Uploads
+
+| Method | Route | Mục đích | Auth |
+| ------ | ----- | -------- | ---- |
+| `POST` | `/api/uploads/avatar` | Upload avatar cho user hiện tại | JWT |
+| `POST` | `/api/uploads/cover` | Upload cover photo cho user hiện tại | JWT |
+| `POST` | `/api/uploads/post-media` | Upload media cho bài viết của user hiện tại | JWT |
+| `POST` | `/api/uploads/story-media` | Upload media cho story của user hiện tại | JWT |
+
+Lưu ý: các endpoint `Uploads` nhận `multipart/form-data`.
+
 ## PostReports
 
 | Method   | Route                                   | Mục đích                             | Auth                    |
@@ -96,4 +107,4 @@ Tài liệu này liệt kê các API đã có trong codebase hiện tại.
 
 - Các API trả về dữ liệu DTO, không trả entity trực tiếp.
 - `NotificationsService` hiện chỉ quản lý inbox notification, chưa có cơ chế push real-time qua SignalR.
-- `UsersController` đang cập nhật avatar/cover bằng URL; chưa có API upload file trực tiếp.
+- Đã có API upload file trực tiếp qua `UploadsController`; endpoint URL update cũ trong `UsersController` vẫn được giữ để tương thích ngược.

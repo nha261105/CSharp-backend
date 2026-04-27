@@ -1,4 +1,7 @@
 using System.Text;
+using InteractHub.API.Hubs;
+using InteractHub.API.SignalR;
+using InteractHub.API.Services;
 using InteractHub.Core.Entities;
 using InteractHub.Core.Helpers;
 using InteractHub.Core.Interfaces.Services;
@@ -9,6 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 var builder = WebApplication.CreateBuilder(args);
@@ -61,6 +65,10 @@ builder.Services.Configure<AzureBlobStorageSettings>(
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("SecretKey is not configured");
 
+// SIGNALR
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<IUserIdProvider, SubUserIdProvider>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -79,6 +87,20 @@ builder.Services.AddAuthentication(options =>
             Encoding.UTF8.GetBytes(secretKey)
         )
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            if (context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications") &&
+                context.Request.Query.TryGetValue("access_token", out var accessToken))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 
 // DEPENDENCY INJECTION
@@ -89,7 +111,10 @@ builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IPostReportService, PostReportService>();
 builder.Services.AddScoped<IPostService, PostsService>();
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
+builder.Services.AddScoped<INotificationRealtimeService, NotificationRealtimeService>();
 builder.Services.AddScoped<IFileUploadService, FileUploadService>();
+
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -170,4 +195,5 @@ app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<NotificationHub>("/hubs/notifications");
 app.Run();

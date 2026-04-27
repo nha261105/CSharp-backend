@@ -11,10 +11,17 @@ public class PostsService : IPostService
 {
 
     private readonly AppDbContext _context;
+    private readonly INotificationsService _notificationsService;
+    private readonly INotificationRealtimeService _notificationRealtimeService;
 
-    public PostsService(AppDbContext context)
+    public PostsService(
+        AppDbContext context,
+        INotificationsService notificationsService,
+        INotificationRealtimeService notificationRealtimeService)
     {
         _context = context;
+        _notificationsService = notificationsService;
+        _notificationRealtimeService = notificationRealtimeService;
     }
 
     private async Task<PostResponseDto> MapToDtoAsync(Post p, long? currentUserId, bool includeOriginal = true)
@@ -240,6 +247,20 @@ public class PostsService : IPostService
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
 
+        if (post.UserId != currentUserId)
+        {
+            var notification = await _notificationsService.CreateNotificationAsync(
+                recipientId: post.UserId,
+                notificationType: "PostLiked",
+                senderId: currentUserId,
+                referenceId: post.PostId,
+                referenceType: "Post",
+                message: "đã thích bài viết của bạn",
+                redirectUrl: $"/posts/{post.PostId}");
+
+            await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
+        }
+
         return post.LikeCount;
     }
 
@@ -301,6 +322,20 @@ public class PostsService : IPostService
 
         await _context.SaveChangesAsync();
         await transaction.CommitAsync();
+
+        if (post.UserId != currentUserId)
+        {
+            var notification = await _notificationsService.CreateNotificationAsync(
+                recipientId: post.UserId,
+                notificationType: "PostShared",
+                senderId: currentUserId,
+                referenceId: post.PostId,
+                referenceType: "Post",
+                message: "đã chia sẻ bài viết của bạn",
+                redirectUrl: $"/posts/{post.PostId}");
+
+            await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
+        }
 
         return post.ShareCount;
     }

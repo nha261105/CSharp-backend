@@ -4,8 +4,12 @@ using InteractHub.Core.Helpers;
 using InteractHub.Core.Interfaces.Services;
 using InteractHub.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
@@ -21,19 +25,22 @@ public class AuthController : ControllerBase
     private readonly IJwtTokenService _jwtTokenService;
     private readonly JwtSettings _jwtSettings;
     private readonly AppDbContext _dbContext;
+    private readonly IWebHostEnvironment _environment;
 
     public AuthController(
         UserManager<User> userManager,
         SignInManager<User> signInManager,
         IJwtTokenService jwtTokenService,
         IOptions<JwtSettings> jwtSettings,
-        AppDbContext dbContext)
+        AppDbContext dbContext,
+        IWebHostEnvironment environment)
     {
         _userManager = userManager;
         _signInManager = signInManager;
         _jwtTokenService = jwtTokenService;
         _jwtSettings = jwtSettings.Value;
         _dbContext = dbContext;
+        _environment = environment;
     }
 
     [HttpPost("register")]
@@ -140,5 +147,100 @@ public class AuthController : ControllerBase
             Roles = roles,
             ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes)
         });
+    }
+
+    [Authorize]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if(!long.TryParse(userId, out var parsedUserId))
+        {
+            return Unauthorized(new {message = "Phiên đăng nhập không hợp lệ"});
+        }
+
+        var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
+        if(user == null)
+        {
+            return Unauthorized(new {message = "Người dùng không tồn tại"});
+        }
+
+        var updateStampResult = await _userManager.UpdateSecurityStampAsync(user);
+        if(!updateStampResult.Succeeded)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError,
+                new {errors = updateStampResult.Errors.Select(e => e.Description)});
+        }
+
+        await _signInManager.SignOutAsync();
+
+        return Ok(new {message = "Đăng xuất thành công"});
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequestDto dto)
+    {
+        var email = dto.Email.Trim();
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if(user == null || !user.IsActive)
+        {
+            return Ok(new {message = "Nếu email tồn tại,Flow hướng dẫn đặt lại mật khẩu"});
+        }
+
+        var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        if(_environment.IsDevelopment())
+        {
+            var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(resetToken));
+            return Ok(new
+            {
+                message = "create reset token",
+                userId = user.Id,
+                resetToken = encodedToken
+            });
+        }
+
+        return Ok(new {message = "Nếu email tồn tại,Flow  hướng dẫn đặt lại mật khẩu"});
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
+    {
+        var user = await _userManager.FindByIdAsync(dto.UserId.ToString());
+        if(user == null || !user.IsActive)
+        {
+            return BadRequest(new {message = "Yêu cầu đặt lại mật khẩu không hợp lệ"});
+        }
+
+        var rawToken = dto.Token.Trim();
+        if(string.IsNullOrWhiteSpace(rawToken))
+        {
+            return BadRequest(new {message = "Token không hợp lệ"});
+        }
+
+        // Support both raw Identity token and Base64Url-encoded token returned by forgot-password (dev mode).
+        string decodedToken;
+        try
+        {
+            var tokenBytes = WebEncoders.Base64UrlDecode(rawToken);
+            decodedToken = Encoding.UTF8.GetString(tokenBytes);
+        }
+        catch(FormatException)
+        {
+            decodedToken = rawToken;
+        }
+
+        var resetResult = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
+        if(!resetResult.Succeeded)
+        {
+            return BadRequest(new {errors = resetResult.Errors.Select(e => e.Description)});
+        }
+
+        await _userManager.UpdateSecurityStampAsync(user);
+
+        return Ok(new {message = "Đặt lại mật khẩu thành công"});
     }
 }

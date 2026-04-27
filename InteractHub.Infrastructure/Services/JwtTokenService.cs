@@ -26,6 +26,7 @@ public class JwtTokenService : IJwtTokenService
             new(JwtRegisteredClaimNames.Email,user.Email ?? ""),
             new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
             new("full_name", user.Fullname),
+            new("security_stamp", user.SecurityStamp ?? string.Empty),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 

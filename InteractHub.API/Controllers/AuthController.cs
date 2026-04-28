@@ -101,7 +101,7 @@ public class AuthController : ControllerBase
         });
     }
 
-    [HttpPost("login")]git a
+    [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
         var email = dto.Email.Trim();

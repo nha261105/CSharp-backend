@@ -53,13 +53,13 @@ public class AuthController : ControllerBase
             ? null
             : dto.PhoneNumber.Trim();
 
-        if(await _userManager.FindByEmailAsync(email) != null)
+        if (await _userManager.FindByEmailAsync(email) != null)
         {
-            return BadRequest(new {message = "Email đã được sử dụng"});
+            return BadRequest(new { message = "Email đã được sử dụng" });
         }
-        if(await _userManager.FindByNameAsync(username) != null)
+        if (await _userManager.FindByNameAsync(username) != null)
         {
-            return BadRequest(new {message = "User đã tồn tại"});
+            return BadRequest(new { message = "User đã tồn tại" });
         }
 
         var user = new User
@@ -71,27 +71,28 @@ public class AuthController : ControllerBase
             IsActive = true,
         };
 
-        var res = await _userManager.CreateAsync(user,dto.Password);
-        if(!res.Succeeded)
+        var res = await _userManager.CreateAsync(user, dto.Password);
+        if (!res.Succeeded)
         {
-            return BadRequest(new {errors = res.Errors.Select(e => e.Description)});
+            return BadRequest(new { errors = res.Errors.Select(e => e.Description) });
         }
 
         var addRoleResult = await _userManager.AddToRoleAsync(user, "User");
-        if(!addRoleResult.Succeeded)
+        if (!addRoleResult.Succeeded)
         {
             // Roll back created account to avoid an active user without required default role.
             await _userManager.DeleteAsync(user);
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new {errors = addRoleResult.Errors.Select(e => e.Description)});
+                new { errors = addRoleResult.Errors.Select(e => e.Description) });
         }
 
         var roles = await _userManager.GetRolesAsync(user);
-        var token = _jwtTokenService.GenerateToken(user,roles);
+        var token = _jwtTokenService.GenerateToken(user, roles);
 
         return Ok(new AuthResponseDto
         {
             Token = token,
+            UserId = user.Id,
             UserName = user.UserName ?? "",
             Email = user.Email ?? "",
             Fullname = user.Fullname,
@@ -100,34 +101,34 @@ public class AuthController : ControllerBase
         });
     }
 
-    [HttpPost("login")]
+    [HttpPost("login")]git a
     public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
     {
         var email = dto.Email.Trim();
 
         var user = await _userManager.FindByEmailAsync(email);
-        if(user == null)
+        if (user == null)
         {
-            return Unauthorized(new {message = "user không tồn tại"});
+            return Unauthorized(new { message = "user không tồn tại" });
         }
 
-        if(!user.IsActive)
+        if (!user.IsActive)
         {
-            return Unauthorized(new {message = "Tài khoản đã bị khóa"});
+            return Unauthorized(new { message = "Tài khoản đã bị khóa" });
         }
 
         var res = await _signInManager.CheckPasswordSignInAsync(
             user, dto.Password, lockoutOnFailure: true
         );
 
-        if(res.IsLockedOut)
+        if (res.IsLockedOut)
         {
-            return StatusCode(423, new {message = "Tài khoản tạm thời bị khóa"});
+            return StatusCode(423, new { message = "Tài khoản tạm thời bị khóa" });
         }
 
-        if(!res.Succeeded)
+        if (!res.Succeeded)
         {
-            return Unauthorized(new {message = "Email hoặc mật khẩu ko hợp lệ"});
+            return Unauthorized(new { message = "Email hoặc mật khẩu ko hợp lệ" });
         }
 
         await _dbContext.Users
@@ -136,11 +137,12 @@ public class AuthController : ControllerBase
                 .SetProperty(u => u.LastLoginDateTime, DateTime.UtcNow));
 
         var roles = await _userManager.GetRolesAsync(user);
-        var token = _jwtTokenService.GenerateToken(user,roles);
+        var token = _jwtTokenService.GenerateToken(user, roles);
 
         return Ok(new AuthResponseDto
         {
             Token = token,
+            UserId = user.Id,
             UserName = user.UserName ?? "",
             Email = user.Email ?? "",
             Fullname = user.Fullname,
@@ -156,27 +158,27 @@ public class AuthController : ControllerBase
         var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
             ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        if(!long.TryParse(userId, out var parsedUserId))
+        if (!long.TryParse(userId, out var parsedUserId))
         {
-            return Unauthorized(new {message = "Phiên đăng nhập không hợp lệ"});
+            return Unauthorized(new { message = "Phiên đăng nhập không hợp lệ" });
         }
 
         var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
-        if(user == null)
+        if (user == null)
         {
-            return Unauthorized(new {message = "Người dùng không tồn tại"});
+            return Unauthorized(new { message = "Người dùng không tồn tại" });
         }
 
         var updateStampResult = await _userManager.UpdateSecurityStampAsync(user);
-        if(!updateStampResult.Succeeded)
+        if (!updateStampResult.Succeeded)
         {
             return StatusCode(StatusCodes.Status500InternalServerError,
-                new {errors = updateStampResult.Errors.Select(e => e.Description)});
+                new { errors = updateStampResult.Errors.Select(e => e.Description) });
         }
 
         await _signInManager.SignOutAsync();
 
-        return Ok(new {message = "Đăng xuất thành công"});
+        return Ok(new { message = "Đăng xuất thành công" });
     }
 
     [HttpPost("forgot-password")]
@@ -185,14 +187,14 @@ public class AuthController : ControllerBase
         var email = dto.Email.Trim();
         var user = await _userManager.FindByEmailAsync(email);
 
-        if(user == null || !user.IsActive)
+        if (user == null || !user.IsActive)
         {
-            return Ok(new {message = "Nếu email tồn tại,Flow hướng dẫn đặt lại mật khẩu"});
+            return Ok(new { message = "Nếu email tồn tại,Flow hướng dẫn đặt lại mật khẩu" });
         }
 
         var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
 
-        if(_environment.IsDevelopment())
+        if (_environment.IsDevelopment())
         {
             var encodedToken = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(resetToken));
             return Ok(new
@@ -203,22 +205,22 @@ public class AuthController : ControllerBase
             });
         }
 
-        return Ok(new {message = "Nếu email tồn tại,Flow  hướng dẫn đặt lại mật khẩu"});
+        return Ok(new { message = "Nếu email tồn tại,Flow  hướng dẫn đặt lại mật khẩu" });
     }
 
     [HttpPost("reset-password")]
     public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequestDto dto)
     {
         var user = await _userManager.FindByIdAsync(dto.UserId.ToString());
-        if(user == null || !user.IsActive)
+        if (user == null || !user.IsActive)
         {
-            return BadRequest(new {message = "Yêu cầu đặt lại mật khẩu không hợp lệ"});
+            return BadRequest(new { message = "Yêu cầu đặt lại mật khẩu không hợp lệ" });
         }
 
         var rawToken = dto.Token.Trim();
-        if(string.IsNullOrWhiteSpace(rawToken))
+        if (string.IsNullOrWhiteSpace(rawToken))
         {
-            return BadRequest(new {message = "Token không hợp lệ"});
+            return BadRequest(new { message = "Token không hợp lệ" });
         }
 
         // Support both raw Identity token and Base64Url-encoded token returned by forgot-password (dev mode).
@@ -228,19 +230,19 @@ public class AuthController : ControllerBase
             var tokenBytes = WebEncoders.Base64UrlDecode(rawToken);
             decodedToken = Encoding.UTF8.GetString(tokenBytes);
         }
-        catch(FormatException)
+        catch (FormatException)
         {
             decodedToken = rawToken;
         }
 
         var resetResult = await _userManager.ResetPasswordAsync(user, decodedToken, dto.NewPassword);
-        if(!resetResult.Succeeded)
+        if (!resetResult.Succeeded)
         {
-            return BadRequest(new {errors = resetResult.Errors.Select(e => e.Description)});
+            return BadRequest(new { errors = resetResult.Errors.Select(e => e.Description) });
         }
 
         await _userManager.UpdateSecurityStampAsync(user);
 
-        return Ok(new {message = "Đặt lại mật khẩu thành công"});
+        return Ok(new { message = "Đặt lại mật khẩu thành công" });
     }
 }

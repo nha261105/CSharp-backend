@@ -208,135 +208,150 @@ public class PostsService : IPostService
 
     public async Task<int> LikePostAsync(long currentUserId, long postId)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        var post = await _context.Posts
-            .FirstOrDefaultAsync(p => p.PostId == postId && !p.Delflg);
-
-        if (post == null)
+        return await strategy.ExecuteAsync(async () =>
         {
-            return -1;
-        }
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-        var existingLike = await _context.PostLikes
-            .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId);
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.PostId == postId && !p.Delflg);
 
-        if (existingLike != null)
-        {
-            if (!existingLike.Delflg)
+            if (post == null)
             {
-                return post.LikeCount;
+                return -1;
             }
 
-            existingLike.Delflg = false;
-            existingLike.RegDatetime = DateTime.UtcNow;
-        }
-        else
-        {
-            _context.PostLikes.Add(new PostLike
+            var existingLike = await _context.PostLikes
+                .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId);
+
+            if (existingLike != null)
             {
-                PostId = postId,
-                UserId = currentUserId,
-                ReactionType = "Like",
-                RegDatetime = DateTime.UtcNow,
-            });
-        }
+                if (!existingLike.Delflg)
+                {
+                    return post.LikeCount;
+                }
 
-        post.LikeCount += 1;
-        post.UpdDatetime = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
+                existingLike.Delflg = false;
+                existingLike.RegDatetime = DateTime.UtcNow;
+            }
+            else
+            {
+                _context.PostLikes.Add(new PostLike
+                {
+                    PostId = postId,
+                    UserId = currentUserId,
+                    ReactionType = "Like",
+                    RegDatetime = DateTime.UtcNow,
+                });
+            }
 
-        if (post.UserId != currentUserId)
-        {
-            var notification = await _notificationsService.CreateNotificationAsync(
-                recipientId: post.UserId,
-                notificationType: "PostLiked",
-                senderId: currentUserId,
-                referenceId: post.PostId,
-                referenceType: "Post",
-                message: "đã thích bài viết của bạn",
-                redirectUrl: $"/posts/{post.PostId}");
+            post.LikeCount += 1;
+            post.UpdDatetime = DateTime.UtcNow;
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
 
-            await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
-        }
+            if (post.UserId != currentUserId)
+            {
+                var notification = await _notificationsService.CreateNotificationAsync(
+                    recipientId: post.UserId,
+                    notificationType: "PostLiked",
+                    senderId: currentUserId,
+                    referenceId: post.PostId,
+                    referenceType: "Post",
+                    message: "đã thích bài viết của bạn",
+                    redirectUrl: $"/posts/{post.PostId}");
 
-        return post.LikeCount;
+                await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
+            }
+
+            return post.LikeCount;
+        });
     }
 
     public async Task<int> UnLikePostAsync(long currentUserId, long postId)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        var post = await _context.Posts
-            .FirstOrDefaultAsync(p => p.PostId == postId && !p.Delflg);
-
-        if (post == null)
+        return await strategy.ExecuteAsync(async () =>
         {
-            return -1;
-        }
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-        var existingLike = await _context.PostLikes
-            .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId && !l.Delflg);
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.PostId == postId && !p.Delflg);
 
-        if (existingLike == null)
-        {
+            if (post == null)
+            {
+                return -1;
+            }
+
+            var existingLike = await _context.PostLikes
+                .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId && !l.Delflg);
+
+            if (existingLike == null)
+            {
+                return post.LikeCount;
+            }
+
+            existingLike.Delflg = true;
+            if (post.LikeCount > 0)
+            {
+                post.LikeCount -= 1;
+            }
+            post.UpdDatetime = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
             return post.LikeCount;
-        }
-
-        existingLike.Delflg = true;
-        if (post.LikeCount > 0)
-        {
-            post.LikeCount -= 1;
-        }
-        post.UpdDatetime = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        return post.LikeCount;
+        });
     }
 
     public async Task<int> SharePostAsync(long currentUserId, long postId)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
+        var strategy = _context.Database.CreateExecutionStrategy();
 
-        var post = await _context.Posts
-            .FirstOrDefaultAsync(p => p.PostId == postId && !p.Delflg);
-
-        if (post == null)
+        return await strategy.ExecuteAsync(async () =>
         {
-            return -1;
-        }
+            await using var transaction = await _context.Database.BeginTransactionAsync();
 
-        _context.PostShares.Add(new PostShare
-        {
-            PostId = postId,
-            UserId = currentUserId,
-            Visibility = post.Visibility,
-            RegDatetime = DateTime.UtcNow,
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(p => p.PostId == postId && !p.Delflg);
+
+            if (post == null)
+            {
+                return -1;
+            }
+
+            _context.PostShares.Add(new PostShare
+            {
+                PostId = postId,
+                UserId = currentUserId,
+                Visibility = post.Visibility,
+                RegDatetime = DateTime.UtcNow,
+            });
+
+            post.ShareCount += 1;
+            post.UpdDatetime = DateTime.UtcNow;
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            if (post.UserId != currentUserId)
+            {
+                var notification = await _notificationsService.CreateNotificationAsync(
+                    recipientId: post.UserId,
+                    notificationType: "PostShared",
+                    senderId: currentUserId,
+                    referenceId: post.PostId,
+                    referenceType: "Post",
+                    message: "đã chia sẻ bài viết của bạn",
+                    redirectUrl: $"/posts/{post.PostId}");
+
+                await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
+            }
+
+            return post.ShareCount;
         });
-
-        post.ShareCount += 1;
-        post.UpdDatetime = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-        await transaction.CommitAsync();
-
-        if (post.UserId != currentUserId)
-        {
-            var notification = await _notificationsService.CreateNotificationAsync(
-                recipientId: post.UserId,
-                notificationType: "PostShared",
-                senderId: currentUserId,
-                referenceId: post.PostId,
-                referenceType: "Post",
-                message: "đã chia sẻ bài viết của bạn",
-                redirectUrl: $"/posts/{post.PostId}");
-
-            await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
-        }
-
-        return post.ShareCount;
     }
 }

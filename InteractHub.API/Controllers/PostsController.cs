@@ -202,4 +202,94 @@ public class PostsController : ControllerBase
             return Unauthorized(new { message = "Token không hợp lệ" });
         }
     }
+    [HttpPost("{id}/comments")]
+    public async Task<IActionResult> AddComment(long id, [FromBody] CreateCommentRequestDto req)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId();
+            var result = await _postService.AddCommentAsync(currentUserId, id, req);
+
+            
+            if (result == null)
+            {
+                return BadRequest(new { message = "Không thể thêm bình luận. Vui lòng kiểm tra lại dữ liệu." });
+            }
+
+            
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "Token không hợp lệ" });
+        }
+    }
+    [HttpPost("{commentId}/reaction")]
+    public async Task<IActionResult> ToggleCommentReaction(long commentId, [FromBody] CommentReactionRequestDto req)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId();
+           
+            var likeCount = await _postService.ToggleCommentReactionAsync(currentUserId, commentId, req.ReactionType);
+
+            if (likeCount < 0)
+            {
+                return NotFound(new { message = "Bình luận không tồn tại hoặc đã bị xóa" });
+            }
+
+            return Ok(new { commentId, likeCount });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "Token không hợp lệ" });
+        }
+    }
+    [HttpGet("{commentId}/reactions-detail")]
+    public async Task<IActionResult> GetCommentReactionsDetail(long commentId)
+    {
+        try
+        {
+            var result = await _postService.GetCommentReactionsDetailAsync(commentId);
+            return Ok(result);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy chi tiết cảm xúc" });
+        }
+    }
+    [HttpGet("{id}/comments-list")]
+public async Task<IActionResult> GetPostCommentsList(long id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+{
+    try
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50;
+        var comments = await _postService.GetPostCommentsAsync(id, page, pageSize);
+        
+        return Ok(comments);
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy danh sách bình luận" });
+    }
+}
+[HttpGet("{id}/post-reactions-detail")]
+public async Task<IActionResult> GetPostReactionsDetail(long id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+{
+    try
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 20;
+        if (pageSize > 50) pageSize = 50;
+
+        var result = await _postService.GetPostReactionsDetailAsync(id, page, pageSize);
+        return Ok(result);
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy danh sách cảm xúc bài viết" });
+    }
+}
 }

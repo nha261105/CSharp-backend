@@ -13,7 +13,12 @@ public interface IPostService
     Task<PostResponseDto> CreatePostAsync(long currentUserId, CreatePostRequestDto req);
 
     Task<PostResponseDto?> UpdatePostAsnc(long currentUserId, long PostId,UpdatePostRequestDto req);
-
+    
+    Task<CommentResponseDto?> AddCommentAsync(long currentUserId, long postId, CreateCommentRequestDto req);
+    Task<int> ToggleCommentReactionAsync(long currentUserId, long commentId, string reactionType);
+    Task<List<CommentReactionDetailResponseDto>> GetCommentReactionsDetailAsync(long commentId);
+    Task<List<CommentResponseDto>> GetPostCommentsAsync(long postId, int page, int pageSize);
+    Task<List<PostReactionDetailResponseDto>> GetPostReactionsDetailAsync(long postId, int page, int pageSize);
     Task<bool> DeletePostAsync(long currentUserId, long PostId);
 
     Task<int> LikePostAsync(long currentUserId, long postId);

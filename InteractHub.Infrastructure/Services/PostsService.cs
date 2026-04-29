@@ -35,9 +35,15 @@ public class PostsService : IPostService
         }
 
         var originalPostDto = (PostResponseDto?)null;
-        if (includeOriginal && p.OriginalPost != null && p.OriginalPost.User != null)
+        if (includeOriginal && p.OriginalPostId.HasValue)
         {
-            originalPostDto = await MapToDtoAsync(p.OriginalPost, currentUserId, includeOriginal: false);
+            var originalPost = await BuildPostGraphQuery(asNoTracking: true)
+                .FirstOrDefaultAsync(op => op.PostId == p.OriginalPostId.Value);
+                
+            if (originalPost != null)
+            {
+                originalPostDto = await MapToDtoAsync(originalPost, currentUserId, includeOriginal: false);
+            }
         }
 
         return new PostResponseDto
@@ -45,6 +51,7 @@ public class PostsService : IPostService
             PostId = p.PostId,
             UserId = p.User.Id,
             UserName = p.User.UserName ?? string.Empty,
+            FullName = p.User.Fullname ?? string.Empty, 
             AvatarUrl = p.User.AvatarUrl ?? string.Empty,
             Content = p.Content ?? string.Empty,
             PostType = p.PostType,
@@ -67,7 +74,7 @@ public class PostsService : IPostService
                     ThumbnailUrl = media.ThumbnailUrl
                 })
                 .ToList(),
-            OriginalPost = originalPostDto
+            OriginalPost = originalPostDto 
         };
     }
 
@@ -353,5 +360,218 @@ public class PostsService : IPostService
 
             return post.ShareCount;
         });
+    }
+    public async Task<CommentResponseDto?> AddCommentAsync(long currentUserId, long postId, CreateCommentRequestDto req)
+    {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        try 
+        {
+            var comment = new Comment 
+            {
+                PostId = postId,
+                UserId = currentUserId,
+                Content = req.Content,
+                ContentFormat = req.ContentFormat,
+                ImageUrl = req.ImageUrl,
+                ParentCommentId = req.ParentCommentId > 0 ? req.ParentCommentId : null,
+                LikeCount = 0,
+                ReplyCount = 0,
+                IsEdited = false,
+                IsReported = false,
+                Delflg = false,
+                RegDatetime = DateTime.UtcNow,
+                UpdDatetime = null
+            };
+
+            _context.Comments.Add(comment);
+            await _context.SaveChangesAsync();
+
+            var mentionDtos = new List<CommentMentionResponseDto>();
+            if (req.Mentions != null && req.Mentions.Any()) 
+            {
+                foreach (var m in req.Mentions)
+                {
+                    var mention = new CommentMention 
+                    {
+                        CommentId = comment.CommentId,
+                        MentionedUserId = m.MentionedUserId,
+                        StartPos = m.StartPos ?? 0, 
+                        EndPos = m.EndPos ?? 0,
+                        RegDatetime = DateTime.UtcNow,
+                        Delflg = false
+                    };
+                    _context.CommentMentions.Add(mention);
+
+                    var mentionedUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == m.MentionedUserId);
+                    mentionDtos.Add(new CommentMentionResponseDto
+                    {
+                        MentionedUserId = m.MentionedUserId,
+                        FullName = mentionedUser?.Fullname ?? string.Empty,
+                        StartPos = m.StartPos ?? 0,
+                        EndPos = m.EndPos ?? 0
+                    });
+                }
+            }
+
+            var post = await _context.Posts.FindAsync(postId);
+            if (post != null) 
+            {
+                post.CommentCount++;
+                post.UpdDatetime = DateTime.UtcNow;
+            }
+
+            if (req.ParentCommentId.HasValue) 
+            {
+                var parent = await _context.Comments.FindAsync(req.ParentCommentId.Value);
+                if (parent != null) 
+                {
+                    parent.ReplyCount++;
+                    parent.UpdDatetime = DateTime.UtcNow;
+                }
+            }
+
+            await _context.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            var currentUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == currentUserId);
+
+            return new CommentResponseDto
+            {
+                CommentId = comment.CommentId,
+                PostId = comment.PostId,
+                UserId = currentUserId,
+                FullName = currentUser?.Fullname ?? string.Empty,
+                AvatarUrl = currentUser?.AvatarUrl ?? string.Empty,
+                Content = comment.Content,
+                ContentFormat = comment.ContentFormat,
+                ImageUrl = comment.ImageUrl,
+                ParentCommentId = comment.ParentCommentId,
+                LikeCount = 0,
+                ReplyCount = 0,
+                IsEdited = false,
+                RegDatetime = comment.RegDatetime,
+                Mentions = mentionDtos
+            };
+            }
+            catch 
+            {
+                await transaction.RollbackAsync();
+                return null;
+            }
+        }
+
+    public async Task<int> ToggleCommentReactionAsync(long currentUserId, long commentId, string reactionType)
+    {
+        var comment = await _context.Comments.FirstOrDefaultAsync(c => c.CommentId == commentId && !c.Delflg);
+        if (comment == null) return -1;
+
+        var existing = await _context.CommentLikes
+            .FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == currentUserId);
+
+        if (existing != null) 
+        {
+            if (existing.ReactionType == reactionType) 
+            {
+                _context.CommentLikes.Remove(existing);
+                comment.LikeCount = Math.Max(0, comment.LikeCount - 1);
+            } 
+            else 
+            {
+                existing.ReactionType = reactionType;
+                existing.RegDatetime = DateTime.UtcNow;
+            }
+        } 
+        else 
+        {
+            _context.CommentLikes.Add(new CommentLike 
+            {
+                CommentId = commentId,
+                UserId = currentUserId,
+                ReactionType = reactionType,
+                RegDatetime = DateTime.UtcNow,
+                Delflg = false
+            });
+            comment.LikeCount++;
+        }
+        
+        await _context.SaveChangesAsync();
+        return comment.LikeCount;
+    }
+
+    public async Task<List<CommentReactionDetailResponseDto>> GetCommentReactionsDetailAsync(long commentId)
+    {
+        return await _context.CommentLikes
+            .Where(l => l.CommentId == commentId && !l.Delflg)
+            .Include(l => l.User)
+            .GroupBy(l => l.ReactionType)
+            .Select(g => new CommentReactionDetailResponseDto 
+            {
+                ReactionType = g.Key,
+                Count = g.Count(),
+                Users = g.Select(u => new UserSummaryResponseDto 
+                {
+                    Id = u.UserId,
+                    FullName = u.User.Fullname,
+                    AvatarUrl = u.User.AvatarUrl ?? "",
+                    UserName = u.User.UserName ?? ""
+                }).ToList()
+            })
+            .ToListAsync();
+    }
+    public async Task<List<CommentResponseDto>> GetPostCommentsAsync(long postId, int page, int pageSize)
+    {
+    var comments = await _context.Comments
+        .Where(c => c.PostId == postId && !c.Delflg)
+        .Include(c => c.User)
+        .Include(c => c.CommentMentions)
+            .ThenInclude(m => m.MentionedUser)
+        .OrderByDescending(c => c.RegDatetime)
+        .Skip((page - 1) * pageSize)
+        .Take(pageSize)
+        .AsNoTracking()
+        .ToListAsync();
+
+    return comments.Select(c => new CommentResponseDto
+    {
+        CommentId = c.CommentId,
+        PostId = c.PostId,
+        UserId = c.UserId,
+        FullName = c.User.Fullname ?? string.Empty,
+        AvatarUrl = c.User.AvatarUrl ?? string.Empty,
+        Content = c.Content,
+        LikeCount = c.LikeCount,
+        ReplyCount = c.ReplyCount,
+        RegDatetime = c.RegDatetime,
+        Mentions = c.CommentMentions.Select(m => new CommentMentionResponseDto
+        {
+            MentionedUserId = m.MentionedUserId,
+            FullName = m.MentionedUser?.Fullname ?? string.Empty,
+            StartPos = m.StartPos ?? 0, 
+            EndPos = m.EndPos ?? 0     
+        }).ToList()
+    }).ToList();
+    }
+    public async Task<List<PostReactionDetailResponseDto>> GetPostReactionsDetailAsync(long postId, int page, int pageSize)
+    {
+    return await _context.PostLikes
+        .Where(l => l.PostId == postId && !l.Delflg)
+        .Include(l => l.User)
+        .GroupBy(l => l.ReactionType)
+        .Select(g => new PostReactionDetailResponseDto 
+        {
+            ReactionType = g.Key ?? "Like",
+            Count = g.Count(),
+            Users = g.OrderByDescending(u => u.RegDatetime)
+                     .Skip((page - 1) * pageSize)
+                     .Take(pageSize)
+                     .Select(u => new UserSummaryResponseDto 
+                     {
+                         Id = u.UserId,
+                         FullName = u.User.Fullname ?? string.Empty,
+                         AvatarUrl = u.User.AvatarUrl ?? string.Empty,
+                         UserName = u.User.UserName ?? string.Empty
+                     }).ToList()
+        })
+        .ToListAsync();
     }
 }

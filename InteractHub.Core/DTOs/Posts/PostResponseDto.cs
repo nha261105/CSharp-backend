@@ -34,4 +34,7 @@ public class PostResponseDto
 
     // Nếu là share lại từ bài khác => OriginalPost
     public PostResponseDto? OriginalPost {get; set;}
+
+    // Mentions (@tag)
+    public List<PostMentionResponseDto> Mentions { get; set; } = new();
 }

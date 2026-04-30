@@ -94,5 +94,12 @@ namespace InteractHub.API.Controllers
             var result = await _friendsService.GetBlockedListAsync(GetUserId());
             return Ok(result);
         }
+
+        [HttpGet("suggestions")]
+        public async Task<IActionResult> GetSuggestions([FromQuery] int limit = 10)
+        {
+            var result = await _friendsService.GetFriendSuggestionsAsync(GetUserId(), limit);
+            return Ok(result);
+        }
     }
 }

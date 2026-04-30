@@ -11,10 +11,17 @@ namespace InteractHub.Infrastructure.Services
     public class FriendsService : IFriendsService
     {
         private readonly AppDbContext _context;
+        private readonly INotificationsService _notificationsService;
+        private readonly INotificationRealtimeService _notificationRealtimeService;
 
-        public FriendsService(AppDbContext context)
+        public FriendsService(
+            AppDbContext context,
+            INotificationsService notificationsService,
+            INotificationRealtimeService notificationRealtimeService)
         {
             _context = context;
+            _notificationsService = notificationsService;
+            _notificationRealtimeService = notificationRealtimeService;
         }
 
         public async Task<(bool Success, string Message)> SendFriendRequestAsync(long currentUserId, SendFriendRequestDto dto)
@@ -75,6 +82,19 @@ namespace InteractHub.Infrastructure.Services
     }
 
     var result = await _context.SaveChangesAsync() > 0;
+    if (result)
+    {
+        var notification = await _notificationsService.CreateNotificationAsync(
+            recipientId: dto.ReceiverId,
+            notificationType: "FriendRequestSent",
+            senderId: currentUserId,
+            referenceId: dto.ReceiverId,
+            referenceType: "FriendRequest",
+            message: "đã gửi lời mời kết bạn cho bạn",
+            redirectUrl: $"/profile/{currentUserId}");
+
+        await _notificationRealtimeService.PushNotificationCreatedAsync(dto.ReceiverId, notification);
+    }
     return result ? (true, "Gửi lời mời thành công.") : (false, "Lỗi hệ thống khi lưu dữ liệu.");
 }
 
@@ -92,7 +112,21 @@ namespace InteractHub.Infrastructure.Services
             friendship.ActionUserId = currentUserId;
             friendship.UpdDatetime = DateTime.UtcNow;
 
-            return await _context.SaveChangesAsync() > 0;
+            var result = await _context.SaveChangesAsync() > 0;
+            if (result)
+            {
+                var notification = await _notificationsService.CreateNotificationAsync(
+                    recipientId: dto.RequesterId,
+                    notificationType: "FriendRequestAccepted",
+                    senderId: currentUserId,
+                    referenceId: currentUserId,
+                    referenceType: "FriendRequest",
+                    message: "đã chấp nhận lời mời kết bạn của bạn",
+                    redirectUrl: $"/profile/{currentUserId}");
+
+                await _notificationRealtimeService.PushNotificationCreatedAsync(dto.RequesterId, notification);
+            }
+            return result;
         }
 
         public async Task<bool> DeclineFriendRequestAsync(long currentUserId, long requesterId)
@@ -319,6 +353,58 @@ namespace InteractHub.Infrastructure.Services
             var mutualIds = myFriendIds.Intersect(theirFriendIds).ToList();
 
             return await GetMutualFriendsInfoAsync(currentUserId, mutualIds);
+        }
+
+        public async Task<List<FriendSuggestionDto>> GetFriendSuggestionsAsync(long currentUserId, int limit)
+        {
+            var myFriendIds = await GetFriendIdsAsync(currentUserId);
+
+            // Lấy tất cả IDs cần loại trừ: bản thân + bạn bè + pending (cả 2 chiều) + blocked
+            var excludedIds = new HashSet<long>(myFriendIds) { currentUserId };
+
+            var pendingOrBlockedIds = await _context.Friendships
+                .Where(f => (f.RequesterId == currentUserId || f.AddresseeId == currentUserId)
+                            && (f.Status == "Pending" || f.IsBlocked)
+                            && f.Delflg == false)
+                .Select(f => f.RequesterId == currentUserId ? f.AddresseeId : f.RequesterId)
+                .ToListAsync();
+
+            foreach (var id in pendingOrBlockedIds) excludedIds.Add(id);
+
+            // 2-hop: bạn của bạn bè, chưa bị loại trừ
+            var candidates = await _context.Friendships
+                .Where(f => (myFriendIds.Contains(f.RequesterId) || myFriendIds.Contains(f.AddresseeId))
+                            && f.Status == "Accepted" && f.Delflg == false)
+                .Select(f => myFriendIds.Contains(f.RequesterId) ? f.AddresseeId : f.RequesterId)
+                .Distinct()
+                .Where(id => !excludedIds.Contains(id))
+                .ToListAsync();
+
+            // Lấy thông tin user và đếm mutual friends
+            var users = await _context.Users
+                .Where(u => candidates.Contains(u.Id) && u.Delflg == false && u.IsActive)
+                .Select(u => new { u.Id, u.UserName, u.Fullname, u.AvatarUrl })
+                .ToListAsync();
+
+            var result = new List<FriendSuggestionDto>();
+            foreach (var u in users)
+            {
+                var theirFriendIds = await GetFriendIdsAsync(u.Id);
+                var mutualCount = myFriendIds.Intersect(theirFriendIds).Count();
+                result.Add(new FriendSuggestionDto
+                {
+                    UserId = u.Id,
+                    UserName = u.UserName,
+                    FullName = u.Fullname,
+                    AvatarUrl = u.AvatarUrl,
+                    MutualFriendsCount = mutualCount
+                });
+            }
+
+            return result
+                .OrderByDescending(x => x.MutualFriendsCount)
+                .Take(limit)
+                .ToList();
         }
     }
 }

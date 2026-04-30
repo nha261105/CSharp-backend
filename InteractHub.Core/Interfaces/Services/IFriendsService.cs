@@ -15,5 +15,12 @@ namespace InteractHub.Core.Interfaces.Services
         Task<List<FriendResponseDto>> GetPendingRequestsAsync(long currentUserId);
         Task<List<MutualFriendResponseDto>> GetMutualFriendsDetailAsync(long currentUserId, long targetUserId);
         Task<List<BlockedUserResponseDto>> GetBlockedListAsync(long currentUserId);
+
+        /// <summary>
+        /// Gợi ý kết bạn dựa trên 2-hop (bạn của bạn bè).
+        /// Loại bỏ: đã là bạn, pending request (cả 2 chiều), bị block, chính mình.
+        /// Sắp xếp theo mutualFriendsCount giảm dần.
+        /// </summary>
+        Task<List<FriendSuggestionDto>> GetFriendSuggestionsAsync(long currentUserId, int limit);
     }
 }

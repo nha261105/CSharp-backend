@@ -6,8 +6,8 @@ public class PostResponseDto
     public long PostId {get; set;}
     public long UserId {get; set;}
     public string UserName {get; set;}= string.Empty;
-    public string AvatarUrl {get; set;}= string.
-    Empty;
+    public string FullName {get; set;}= string.Empty;
+    public string AvatarUrl {get; set;}= string.Empty;
 
     // Nội dung
     public string Content {get; set;} = string.Empty;
@@ -34,4 +34,7 @@ public class PostResponseDto
 
     // Nếu là share lại từ bài khác => OriginalPost
     public PostResponseDto? OriginalPost {get; set;}
+
+    // Mentions (@tag)
+    public List<PostMentionResponseDto> Mentions { get; set; } = new();
 }

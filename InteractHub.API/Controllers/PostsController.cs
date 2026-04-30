@@ -32,17 +32,18 @@ public class PostsController : ControllerBase
         try
         {
             long userId = GetCurrentUserId();
-            var post = await _postService.GetPostWithIdAsync(userId,id);
+            var post = await _postService.GetPostDetailAsync(userId, id);
 
-            if(post == null)
+            if (post == null)
             {
-                return NotFound(new {message = "Post không tồn tại"});
+                return NotFound(new { message = "Post không tồn tại" });
             }
-            return Ok(post);
 
-        } catch(UnauthorizedAccessException)
+            return Ok(post);
+        }
+        catch (UnauthorizedAccessException)
         {
-            return Unauthorized(new {message = "Token không hợp lệ"});
+            return Unauthorized(new { message = "Token không hợp lệ" });
         }
     }
 
@@ -90,11 +91,16 @@ public class PostsController : ControllerBase
         try
         {
             var userId = GetCurrentUserId();
-            var post = await _postService.CreatePostAsync(userId,req);
-            return CreatedAtAction(nameof(GetPostById), new {id = post.PostId}, post);
-        } catch(UnauthorizedAccessException)
+            var post = await _postService.CreatePostAsync(userId, req);
+            return CreatedAtAction(nameof(GetPostById), new { id = post.PostId }, post);
+        }
+        catch (UnauthorizedAccessException)
         {
-            return Unauthorized(new {message = "Token không hợp lệ"});
+            return Unauthorized(new { message = "Token không hợp lệ" });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { message = ex.Message });
         }
     }
 
@@ -140,20 +146,20 @@ public class PostsController : ControllerBase
         }
     }
 
-    [HttpPost("{id}/like")]
-    public async Task<IActionResult> LikePost(long id)
+    [HttpPost("{id}/reaction")]
+    public async Task<IActionResult> TogglePostReaction(long id, [FromBody] PostReactionRequestDto req)
     {
         try
         {
             var userId = GetCurrentUserId();
-            var likeCount = await _postService.LikePostAsync(userId, id);
+            var (likeCount, reactionType) = await _postService.TogglePostReactionAsync(userId, id, req.ReactionType);
 
             if (likeCount < 0)
             {
                 return NotFound(new { message = "Post không tồn tại" });
             }
 
-            return Ok(new { postId = id, likeCount });
+            return Ok(new { postId = id, likeCount, reactionType });
         }
         catch (UnauthorizedAccessException)
         {
@@ -161,45 +167,173 @@ public class PostsController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}/like")]
-    public async Task<IActionResult> UnLikePost(long id)
-    {
-        try
-        {
-            var userId = GetCurrentUserId();
-            var likeCount = await _postService.UnLikePostAsync(userId, id);
-
-            if (likeCount < 0)
-            {
-                return NotFound(new { message = "Post không tồn tại" });
-            }
-
-            return Ok(new { postId = id, likeCount });
-        }
-        catch (UnauthorizedAccessException)
-        {
-            return Unauthorized(new { message = "Token không hợp lệ" });
-        }
-    }
 
     [HttpPost("{id}/share")]
-    public async Task<IActionResult> SharePost(long id)
+    public async Task<IActionResult> SharePost(long id, [FromBody] SharePostRequestDto req)
     {
         try
         {
             var userId = GetCurrentUserId();
-            var shareCount = await _postService.SharePostAsync(userId, id);
+            var sharedPost = await _postService.SharePostAsync(userId, id, req);
 
-            if (shareCount < 0)
+            if (sharedPost == null)
             {
                 return NotFound(new { message = "Post không tồn tại" });
             }
 
-            return Ok(new { postId = id, shareCount });
+            return CreatedAtAction(nameof(GetPostById), new { id = sharedPost.PostId }, sharedPost);
         }
         catch (UnauthorizedAccessException)
         {
             return Unauthorized(new { message = "Token không hợp lệ" });
         }
     }
+    [HttpPost("{id}/comments")]
+    public async Task<IActionResult> AddComment(long id, [FromBody] CreateCommentRequestDto req)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId();
+            var result = await _postService.AddCommentAsync(currentUserId, id, req);
+
+            if (result == null)
+            {
+                return BadRequest(new { message = "Không thể thêm bình luận. Vui lòng kiểm tra lại dữ liệu." });
+            }
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "Token không hợp lệ" });
+        }
+    }
+
+    [HttpPut("{postId}/comments/{commentId}")]
+    public async Task<IActionResult> UpdateComment(long postId, long commentId, [FromBody] UpdateCommentRequestDto req)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId();
+            var result = await _postService.UpdateCommentAsync(currentUserId, postId, commentId, req);
+
+            if (result == null)
+            {
+                return NotFound(new { message = "Bình luận không tồn tại hoặc đã bị xóa" });
+            }
+
+            return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = ex.Message });
+        }
+    }
+
+    [HttpDelete("{postId}/comments/{commentId}")]
+    public async Task<IActionResult> DeleteComment(long postId, long commentId)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId();
+            var deleted = await _postService.DeleteCommentAsync(currentUserId, postId, commentId);
+
+            if (!deleted)
+            {
+                return NotFound(new { message = "Bình luận không tồn tại hoặc đã bị xóa" });
+            }
+
+            return NoContent();
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode(403, new { message = ex.Message });
+        }
+    }
+
+    [HttpPost("{postId}/comments/{commentId}/reaction")]
+    public async Task<IActionResult> ToggleCommentReaction(long postId, long commentId, [FromBody] CommentReactionRequestDto req)
+    {
+        try
+        {
+            var currentUserId = GetCurrentUserId();
+
+            var likeCount = await _postService.ToggleCommentReactionAsync(currentUserId, postId, commentId, req.ReactionType);
+
+            if (likeCount < 0)
+            {
+                return NotFound(new { message = "Bình luận không tồn tại, đã bị xóa, hoặc không thuộc bài viết này" });
+            }
+
+            return Ok(new { commentId, likeCount });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Unauthorized(new { message = "Token không hợp lệ" });
+        }
+    }
+    [HttpGet("{postId}/comments/{commentId}/reactions-detail")]
+    public async Task<IActionResult> GetCommentReactionsDetail(long postId, long commentId)
+    {
+        try
+        {
+            var result = await _postService.GetCommentReactionsDetailAsync(commentId);
+            return Ok(result);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy chi tiết cảm xúc" });
+        }
+    }
+    [HttpGet("{id}/comments-list")]
+public async Task<IActionResult> GetPostCommentsList(long id, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+{
+    try
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50;
+        var comments = await _postService.GetPostCommentsAsync(id, page, pageSize);
+        
+        return Ok(comments);
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy danh sách bình luận" });
+    }
+}
+
+[HttpGet("{postId}/comments/{commentId}/replies")]
+public async Task<IActionResult> GetCommentReplies(long postId, long commentId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
+{
+    try
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 10;
+        if (pageSize > 50) pageSize = 50;
+        var replies = await _postService.GetCommentRepliesAsync(postId, commentId, page, pageSize);
+        return Ok(replies);
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy danh sách replies" });
+    }
+}
+[HttpGet("{id}/post-reactions-detail")]
+public async Task<IActionResult> GetPostReactionsDetail(long id, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+{
+    try
+    {
+        if (page < 1) page = 1;
+        if (pageSize < 1) pageSize = 20;
+        if (pageSize > 50) pageSize = 50;
+
+        var result = await _postService.GetPostReactionsDetailAsync(id, page, pageSize);
+        return Ok(result);
+    }
+    catch (Exception)
+    {
+        return StatusCode(500, new { message = "Đã xảy ra lỗi khi lấy danh sách cảm xúc bài viết" });
+    }
+}
 }

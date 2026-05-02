@@ -272,6 +272,18 @@ public class AuthController : ControllerBase
 
         await _userManager.UpdateSecurityStampAsync(user);
 
-        return Ok(new { message = "Đổi mật khẩu thành công" });
+        var roles = await _userManager.GetRolesAsync(user);
+        var token = _jwtTokenService.GenerateToken(user, roles);
+
+        return Ok(new AuthResponseDto
+        {
+            Token = token,
+            UserId = user.Id,
+            UserName = user.UserName ?? "",
+            Email = user.Email ?? "",
+            Fullname = user.Fullname,
+            Roles = roles,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes)
+        });
     }
 }

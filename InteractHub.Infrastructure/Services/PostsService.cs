@@ -62,6 +62,7 @@ public class PostsService : IPostService
             Content = p.Content ?? string.Empty,
             PostType = p.PostType,
             Visibility = p.Visibility,
+            Feeling = p.Feeling,
             LikeCount = p.LikeCount,
             CommentCount = p.CommentCount,
             ShareCount = p.ShareCount,
@@ -306,6 +307,7 @@ public class PostsService : IPostService
             Content = post.Content ?? string.Empty,
             PostType = post.PostType,
             Visibility = post.Visibility,
+            Feeling = post.Feeling,
             LikeCount = post.LikeCount,
             CommentCount = post.CommentCount,
             ShareCount = post.ShareCount,
@@ -392,7 +394,15 @@ public class PostsService : IPostService
         // Bulk insert PostMention nếu client gửi kèm danh sách mention
         if (req.Mentions != null && req.Mentions.Count > 0)
         {
+            // Validate: chỉ insert những userId thực sự tồn tại trong DB
+            var requestedIds = req.Mentions.Select(m => m.MentionedUserId).Distinct().ToList();
+            var validIds = await _context.Users
+                .Where(u => requestedIds.Contains(u.Id) && !u.Delflg)
+                .Select(u => u.Id)
+                .ToListAsync();
+
             var mentionEntities = req.Mentions
+                .Where(m => validIds.Contains(m.MentionedUserId))
                 .Select(m => new PostMention
                 {
                     PostId = post.PostId,
@@ -404,8 +414,11 @@ public class PostsService : IPostService
                 })
                 .ToList();
 
-            _context.PostMentions.AddRange(mentionEntities);
-            await _context.SaveChangesAsync();
+            if (mentionEntities.Count > 0)
+            {
+                _context.PostMentions.AddRange(mentionEntities);
+                await _context.SaveChangesAsync();
+            }
         }
 
         var createdPost = await BuildPostGraphQuery(asNoTracking: true)

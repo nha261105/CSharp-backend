@@ -13,6 +13,7 @@ public class PostResponseDto
     public string Content {get; set;} = string.Empty;
     public string PostType {get; set;} = "text";
     public string Visibility {get; set;} = "Public";
+    public string? Feeling { get; set; }
 
     // tương tác
     public int LikeCount {get; set;} = 0;

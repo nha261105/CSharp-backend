@@ -306,7 +306,7 @@ public class PostsControllerTests
         // Arrange
         var postId = 1L;
         var commentsDto = new List<CommentResponseDto> { new CommentResponseDto { CommentId = 1 } };
-        _postServiceMock.Setup(s => s.GetPostCommentsAsync(postId, 1, 10))
+        _postServiceMock.Setup(s => s.GetPostCommentsAsync(1L, postId, 1, 10))
                         .ReturnsAsync(commentsDto);
 
         // Act
@@ -325,7 +325,7 @@ public class PostsControllerTests
         var postId = 1L;
         var commentId = 1L;
         var repliesDto = new List<CommentResponseDto> { new CommentResponseDto { CommentId = 2 } };
-        _postServiceMock.Setup(s => s.GetCommentRepliesAsync(postId, commentId, 1, 10))
+        _postServiceMock.Setup(s => s.GetCommentRepliesAsync(1L, postId, commentId, 1, 10))
                         .ReturnsAsync(repliesDto);
 
         // Act

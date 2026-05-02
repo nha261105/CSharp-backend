@@ -20,6 +20,7 @@ public class PostDetailResponseDto
     public string Content { get; set; } = string.Empty;
     public string PostType { get; set; } = "Text";
     public string Visibility { get; set; } = "Public";
+    public string? Feeling { get; set; }
 
     // ── Số liệu tương tác ────────────────────────────────────────
     public int LikeCount { get; set; }

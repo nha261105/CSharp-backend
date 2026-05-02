@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
 
@@ -29,6 +29,7 @@
   <ItemGroup>
     <ProjectReference Include="..\InteractHub.Core\InteractHub.Core.csproj" />
     <ProjectReference Include="..\InteractHub.Infrastructure\InteractHub.Infrastructure.csproj" />
+    <ProjectReference Include="..\InteractHub.API\InteractHub.API.csproj" />
   </ItemGroup>
 
 </Project>

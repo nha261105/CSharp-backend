@@ -16,6 +16,7 @@ public class CommentWithReactionsDto
     public string? ImageUrl { get; set; }
     public long? ParentCommentId { get; set; }
     public int LikeCount { get; set; }
+    public string? MyReactionType { get; set; }
     public int ReplyCount { get; set; }
     public bool IsEdited { get; set; }
     public DateTime RegDatetime { get; set; }

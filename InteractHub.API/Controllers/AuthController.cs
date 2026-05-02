@@ -245,4 +245,33 @@ public class AuthController : ControllerBase
 
         return Ok(new { message = "Đặt lại mật khẩu thành công" });
     }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequestDto dto)
+    {
+        var userId = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!long.TryParse(userId, out var parsedUserId))
+        {
+            return Unauthorized(new { message = "Phiên đăng nhập không hợp lệ" });
+        }
+
+        var user = await _userManager.FindByIdAsync(parsedUserId.ToString());
+        if (user == null || !user.IsActive)
+        {
+            return Unauthorized(new { message = "Người dùng không tồn tại hoặc đã bị khóa" });
+        }
+
+        var changeResult = await _userManager.ChangePasswordAsync(user, dto.CurrentPassword, dto.NewPassword);
+        if (!changeResult.Succeeded)
+        {
+            return BadRequest(new { errors = changeResult.Errors.Select(e => e.Description) });
+        }
+
+        await _userManager.UpdateSecurityStampAsync(user);
+
+        return Ok(new { message = "Đổi mật khẩu thành công" });
+    }
 }

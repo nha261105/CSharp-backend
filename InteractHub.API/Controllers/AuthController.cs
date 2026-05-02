@@ -146,6 +146,7 @@ public class AuthController : ControllerBase
             UserName = user.UserName ?? "",
             Email = user.Email ?? "",
             Fullname = user.Fullname,
+            AvatarUrl = user.AvatarUrl,
             Roles = roles,
             ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes)
         });
@@ -282,6 +283,7 @@ public class AuthController : ControllerBase
             UserName = user.UserName ?? "",
             Email = user.Email ?? "",
             Fullname = user.Fullname,
+            AvatarUrl = user.AvatarUrl,
             Roles = roles,
             ExpiresAt = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpirationInMinutes)
         });

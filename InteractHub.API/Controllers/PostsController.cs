@@ -290,10 +290,13 @@ public async Task<IActionResult> GetPostCommentsList(long id, [FromQuery] int pa
 {
     try
     {
+        var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        long? currentUserId = currentUserIdStr != null ? long.Parse(currentUserIdStr) : null;
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 50) pageSize = 50;
-        var comments = await _postService.GetPostCommentsAsync(id, page, pageSize);
+        var comments = await _postService.GetPostCommentsAsync(currentUserId, id, page, pageSize);
         
         return Ok(comments);
     }
@@ -308,10 +311,13 @@ public async Task<IActionResult> GetCommentReplies(long postId, long commentId, 
 {
     try
     {
+        var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        long? currentUserId = currentUserIdStr != null ? long.Parse(currentUserIdStr) : null;
+
         if (page < 1) page = 1;
         if (pageSize < 1) pageSize = 10;
         if (pageSize > 50) pageSize = 50;
-        var replies = await _postService.GetCommentRepliesAsync(postId, commentId, page, pageSize);
+        var replies = await _postService.GetCommentRepliesAsync(currentUserId, postId, commentId, page, pageSize);
         return Ok(replies);
     }
     catch (Exception)

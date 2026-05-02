@@ -21,6 +21,7 @@ public class PostResponseDto
 
     // User hiện tại
     public bool IsLikeByMe {get; set;} = true;
+    public string? MyReactionType { get; set; }
     public bool IsPinned {get; set;}
     public bool AllowComment {get; set;}
 

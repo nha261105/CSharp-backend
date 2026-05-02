@@ -28,6 +28,7 @@ public class PostDetailResponseDto
 
     // ── Trạng thái với người dùng hiện tại ───────────────────────
     public bool IsLikeByMe { get; set; }
+    public string? MyReactionType { get; set; }
     public bool IsPinned { get; set; }
     public bool AllowComment { get; set; }
 

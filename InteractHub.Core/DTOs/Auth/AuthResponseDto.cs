@@ -10,6 +10,8 @@ public class AuthResponseDto
 
     public string Fullname { get; set; } = string.Empty;
 
+    public string? AvatarUrl { get; set; }
+
     public IList<string> Roles { get; set; } = [];
 
     public DateTime ExpiresAt { get; set; }

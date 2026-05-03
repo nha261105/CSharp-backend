@@ -15,39 +15,37 @@ public class SearchService : ISearchService
     }
 
     public async Task<GlobalSearchResponseDto> GlobalSearchAsync(
-        long? currentUserId,
-        string keyword,
-        int page,
-        int pageSize)
+    long? currentUserId,
+    string keyword,
+    int page,
+    int pageSize)
     {
         var lower = keyword.ToLower().Trim();
         var skip = (page - 1) * pageSize;
 
-        // Chạy 2 query song song để giảm latency
-        var usersTask = SearchUsersAsync(currentUserId, lower, skip, pageSize);
-        var postsTask = SearchPostsAsync(lower, skip, pageSize);
-
-        await Task.WhenAll(usersTask, postsTask);
+        // Chạy tuần tự thay vì Task.WhenAll
+        var users = await SearchUsersAsync(currentUserId, lower, skip, pageSize);
+        var posts = await SearchPostsAsync(lower, skip, pageSize);
 
         return new GlobalSearchResponseDto
         {
             Keyword = keyword,
-            Users = usersTask.Result,
-            Posts = postsTask.Result
+            Users = users,
+            Posts = posts
         };
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
 
     private async Task<List<SearchUserResultDto>> SearchUsersAsync(
-        long? currentUserId, string lower, int skip, int pageSize)
+    long? currentUserId, string lower, int skip, int pageSize)
     {
-        // ✅ FIX: Thêm null check để tránh NullReferenceException
+        var searchPattern = $"%{lower}%";
         var users = await _context.Users
             .Where(u => !u.Delflg &&
-                ((u.UserName != null && u.UserName.ToLower().Contains(lower)) ||
-                 (u.Fullname != null && u.Fullname.ToLower().Contains(lower)) ||
-                 (u.Email != null && u.Email.ToLower().Contains(lower))))
+                        (EF.Functions.Like(u.UserName, searchPattern) ||
+                        EF.Functions.Like(u.Fullname, searchPattern) ||
+                        EF.Functions.Like(u.Email, searchPattern)))
             .OrderBy(u => u.Fullname)
             .Skip(skip)
             .Take(pageSize)
@@ -55,7 +53,7 @@ public class SearchService : ISearchService
             .ToListAsync();
 
         // ✅ FIX: Nếu không có currentUserId, return ngay không cần tính mutual friends
-        if (!currentUserId.HasValue)
+        if (!currentUserId.HasValue || users.Count == 0)
         {
             return users.Select(u => new SearchUserResultDto
             {
@@ -67,12 +65,9 @@ public class SearchService : ISearchService
             }).ToList();
         }
 
-        //  FIX: SINGLE QUERY - Lấy tất cả friendships cần thiết trong 1 lần
-        // Thay vì query trong loop (N+1 problem), ta query 1 lần cho tất cả users
         var userIds = users.Select(u => u.Id).ToList();
-        userIds.Add(currentUserId.Value); // Thêm currentUser vào list
+        userIds.Add(currentUserId.Value); 
 
-        // Query 1 lần duy nhất để lấy tất cả friendships liên quan
         var allFriendships = await _context.Friendships
             .Where(f => f.Status == "Accepted" && !f.IsBlocked && !f.Delflg &&
                         (userIds.Contains(f.RequesterId) || userIds.Contains(f.AddresseeId)))
@@ -80,12 +75,9 @@ public class SearchService : ISearchService
             .AsNoTracking()
             .ToListAsync();
 
-        // FIX: Build friendship map trong memory (rất nhanh)
-        // Dictionary cho phép lookup O(1) thay vì query database O(n)
         var friendshipMap = new Dictionary<long, HashSet<long>>();
         foreach (var f in allFriendships)
         {
-            // Tạo bidirectional mapping
             if (!friendshipMap.ContainsKey(f.RequesterId))
                 friendshipMap[f.RequesterId] = new HashSet<long>();
             if (!friendshipMap.ContainsKey(f.AddresseeId))
@@ -95,10 +87,8 @@ public class SearchService : ISearchService
             friendshipMap[f.AddresseeId].Add(f.RequesterId);
         }
 
-        // Lấy danh sách bạn bè của currentUser
         var myFriends = friendshipMap.GetValueOrDefault(currentUserId.Value, new HashSet<long>());
 
-        // ✅ FIX: Tính mutual friends trong memory (không query database)
         var result = new List<SearchUserResultDto>();
         foreach (var u in users)
         {
@@ -119,13 +109,14 @@ public class SearchService : ISearchService
     }
 
     private async Task<List<SearchPostResultDto>> SearchPostsAsync(
-        string lower, int skip, int pageSize)
+    string lower, int skip, int pageSize)
     {
+        var searchPattern = $"%{lower}%";
         return await _context.Posts
             .Where(p => !p.Delflg &&
                         p.Visibility == "Public" &&
                         p.Content != null &&
-                        p.Content.ToLower().Contains(lower))
+                        EF.Functions.Like(p.Content, searchPattern)) 
             .Include(p => p.User)
             .OrderByDescending(p => p.RegDatetime)
             .Skip(skip)

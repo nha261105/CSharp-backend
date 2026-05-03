@@ -27,11 +27,17 @@ public class PostsService : IPostService
     private async Task<PostResponseDto> MapToDtoAsync(Post p, long? currentUserId, bool includeOriginal = true)
     {
         var isLikeByMe = false;
+        string? myReactionType = null;
         if (currentUserId.HasValue)
         {
-            isLikeByMe = await _context.PostLikes
+            var myLike = await _context.PostLikes
                 .AsNoTracking()
-                .AnyAsync(l => l.PostId == p.PostId && l.UserId == currentUserId.Value && !l.Delflg);
+                .FirstOrDefaultAsync(l => l.PostId == p.PostId && l.UserId == currentUserId.Value && !l.Delflg);
+            if (myLike != null)
+            {
+                isLikeByMe = true;
+                myReactionType = myLike.ReactionType;
+            }
         }
 
         var originalPostDto = (PostResponseDto?)null;
@@ -56,10 +62,12 @@ public class PostsService : IPostService
             Content = p.Content ?? string.Empty,
             PostType = p.PostType,
             Visibility = p.Visibility,
+            Feeling = p.Feeling,
             LikeCount = p.LikeCount,
             CommentCount = p.CommentCount,
             ShareCount = p.ShareCount,
             IsLikeByMe = isLikeByMe,
+            MyReactionType = myReactionType,
             IsPinned = p.IsPinned,
             AllowComment = p.AllowComment,
             LocationName = p.LocationName,
@@ -165,11 +173,17 @@ public class PostsService : IPostService
 
         // ── [2] Kiểm tra user hiện tại đã like chưa ──────────────────────────
         var isLikedByMe = false;
+        string? myReactionType = null;
         if (currentUserId.HasValue)
         {
-            isLikedByMe = await _context.PostLikes
+            var myLike = await _context.PostLikes
                 .AsNoTracking()
-                .AnyAsync(l => l.PostId == postId && l.UserId == currentUserId.Value && !l.Delflg);
+                .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId.Value && !l.Delflg);
+            if (myLike != null)
+            {
+                isLikedByMe = true;
+                myReactionType = myLike.ReactionType;
+            }
         }
 
         // ── [3] OriginalPost (tái dụng MapToDtoAsync, không đệ quy) ──────────
@@ -265,6 +279,7 @@ public class PostsService : IPostService
             ImageUrl = c.ImageUrl,
             ParentCommentId = c.ParentCommentId,
             LikeCount = c.LikeCount,
+            MyReactionType = currentUserId.HasValue ? allCommentLikes.FirstOrDefault(l => l.CommentId == c.CommentId && l.UserId == currentUserId.Value)?.ReactionType : null,
             ReplyCount = c.ReplyCount,
             IsEdited = c.IsEdited,
             RegDatetime = c.RegDatetime,
@@ -292,10 +307,12 @@ public class PostsService : IPostService
             Content = post.Content ?? string.Empty,
             PostType = post.PostType,
             Visibility = post.Visibility,
+            Feeling = post.Feeling,
             LikeCount = post.LikeCount,
             CommentCount = post.CommentCount,
             ShareCount = post.ShareCount,
             IsLikeByMe = isLikedByMe,
+            MyReactionType = myReactionType,
             IsPinned = post.IsPinned,
             AllowComment = post.AllowComment,
             LocationName = post.LocationName,
@@ -377,7 +394,15 @@ public class PostsService : IPostService
         // Bulk insert PostMention nếu client gửi kèm danh sách mention
         if (req.Mentions != null && req.Mentions.Count > 0)
         {
+            // Validate: chỉ insert những userId thực sự tồn tại trong DB
+            var requestedIds = req.Mentions.Select(m => m.MentionedUserId).Distinct().ToList();
+            var validIds = await _context.Users
+                .Where(u => requestedIds.Contains(u.Id) && !u.Delflg)
+                .Select(u => u.Id)
+                .ToListAsync();
+
             var mentionEntities = req.Mentions
+                .Where(m => validIds.Contains(m.MentionedUserId))
                 .Select(m => new PostMention
                 {
                     PostId = post.PostId,
@@ -389,8 +414,11 @@ public class PostsService : IPostService
                 })
                 .ToList();
 
-            _context.PostMentions.AddRange(mentionEntities);
-            await _context.SaveChangesAsync();
+            if (mentionEntities.Count > 0)
+            {
+                _context.PostMentions.AddRange(mentionEntities);
+                await _context.SaveChangesAsync();
+            }
         }
 
         var createdPost = await BuildPostGraphQuery(asNoTracking: true)
@@ -457,22 +485,27 @@ public class PostsService : IPostService
             if (post == null) return (-1, null);
 
             var existing = await _context.PostLikes
-                .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId && !l.Delflg);
+                .FirstOrDefaultAsync(l => l.PostId == postId && l.UserId == currentUserId);
 
             string? resultReactionType;
 
             if (existing != null)
             {
-                if (existing.ReactionType == reactionType)
+                if (!existing.Delflg && existing.ReactionType == reactionType)
                 {
-                    // Cùng type → toggle off (xóa reaction)
+                    // Cùng type -> toggle off (xóa mềm reaction)
                     existing.Delflg = true;
                     post.LikeCount = Math.Max(0, post.LikeCount - 1);
                     resultReactionType = null; // đã bỏ reaction
                 }
                 else
                 {
-                    // Khác type → đổi sang type mới, LikeCount không đổi
+                    // Khác type -> đổi sang type mới HOẶC đã unlike giờ like lại
+                    if (existing.Delflg) 
+                    {
+                        post.LikeCount += 1;
+                        existing.Delflg = false;
+                    }
                     existing.ReactionType = reactionType;
                     existing.RegDatetime = DateTime.UtcNow;
                     resultReactionType = reactionType;
@@ -480,7 +513,7 @@ public class PostsService : IPostService
             }
             else
             {
-                // Chưa react → thêm mới
+                // Chưa react -> thêm mới
                 _context.PostLikes.Add(new PostLike
                 {
                     PostId = postId,
@@ -584,9 +617,12 @@ public class PostsService : IPostService
     }
     public async Task<CommentResponseDto?> AddCommentAsync(long currentUserId, long postId, CreateCommentRequestDto req)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        try 
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try 
+            {
             var comment = new Comment 
             {
                 PostId = postId,
@@ -694,7 +730,8 @@ public class PostsService : IPostService
                 await transaction.RollbackAsync();
                 return null;
             }
-        }
+        });
+    }
 
     public async Task<CommentResponseDto?> UpdateCommentAsync(
         long currentUserId, long postId, long commentId, UpdateCommentRequestDto req)
@@ -744,9 +781,12 @@ public class PostsService : IPostService
 
     public async Task<bool> DeleteCommentAsync(long currentUserId, long postId, long commentId)
     {
-        await using var transaction = await _context.Database.BeginTransactionAsync();
-        try
+        var strategy = _context.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+            try
+            {
             var comment = await _context.Comments
                 .FirstOrDefaultAsync(c => c.CommentId == commentId && c.PostId == postId && !c.Delflg);
 
@@ -792,6 +832,7 @@ public class PostsService : IPostService
             await transaction.RollbackAsync();
             return false;
         }
+        });
     }
 
     public async Task<int> ToggleCommentReactionAsync(long currentUserId, long postId, long commentId, string reactionType)
@@ -857,7 +898,7 @@ public class PostsService : IPostService
             })
             .ToListAsync();
     }
-    public async Task<List<CommentResponseDto>> GetPostCommentsAsync(long postId, int page, int pageSize)
+    public async Task<List<CommentResponseDto>> GetPostCommentsAsync(long? currentUserId, long postId, int page, int pageSize)
     {
     var comments = await _context.Comments
         .Where(c => c.PostId == postId && !c.Delflg)
@@ -870,6 +911,14 @@ public class PostsService : IPostService
         .AsNoTracking()
         .ToListAsync();
 
+    var commentIds = comments.Select(c => c.CommentId).ToList();
+    var allCommentLikes = currentUserId.HasValue
+        ? await _context.CommentLikes
+            .Where(l => commentIds.Contains(l.CommentId) && l.UserId == currentUserId.Value && !l.Delflg)
+            .AsNoTracking()
+            .ToListAsync()
+        : new List<CommentLike>();
+
     return comments.Select(c => new CommentResponseDto
     {
         CommentId = c.CommentId,
@@ -879,6 +928,7 @@ public class PostsService : IPostService
         AvatarUrl = c.User.AvatarUrl ?? string.Empty,
         Content = c.Content,
         LikeCount = c.LikeCount,
+        MyReactionType = currentUserId.HasValue ? allCommentLikes.FirstOrDefault(l => l.CommentId == c.CommentId)?.ReactionType : null,
         ReplyCount = c.ReplyCount,
         RegDatetime = c.RegDatetime,
         Mentions = c.CommentMentions.Select(m => new CommentMentionResponseDto
@@ -891,7 +941,7 @@ public class PostsService : IPostService
     }).ToList();
     }
 
-    public async Task<List<CommentResponseDto>> GetCommentRepliesAsync(long postId, long commentId, int page, int pageSize)
+    public async Task<List<CommentResponseDto>> GetCommentRepliesAsync(long? currentUserId, long postId, long commentId, int page, int pageSize)
     {
         var replies = await _context.Comments
             .Where(c => c.PostId == postId && c.ParentCommentId == commentId && !c.Delflg)
@@ -903,6 +953,14 @@ public class PostsService : IPostService
             .Take(pageSize)
             .AsNoTracking()
             .ToListAsync();
+
+        var commentIds = replies.Select(c => c.CommentId).ToList();
+        var allCommentLikes = currentUserId.HasValue
+            ? await _context.CommentLikes
+                .Where(l => commentIds.Contains(l.CommentId) && l.UserId == currentUserId.Value && !l.Delflg)
+                .AsNoTracking()
+                .ToListAsync()
+            : new List<CommentLike>();
 
         return replies.Select(c => new CommentResponseDto
         {
@@ -916,6 +974,7 @@ public class PostsService : IPostService
             ImageUrl = c.ImageUrl,
             ParentCommentId = c.ParentCommentId,
             LikeCount = c.LikeCount,
+            MyReactionType = currentUserId.HasValue ? allCommentLikes.FirstOrDefault(l => l.CommentId == c.CommentId)?.ReactionType : null,
             ReplyCount = c.ReplyCount,
             IsEdited = c.IsEdited,
             RegDatetime = c.RegDatetime,

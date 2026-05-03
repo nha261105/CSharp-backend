@@ -42,40 +42,68 @@ public class SearchService : ISearchService
     private async Task<List<SearchUserResultDto>> SearchUsersAsync(
         long? currentUserId, string lower, int skip, int pageSize)
     {
+        // ✅ FIX: Thêm null check để tránh NullReferenceException
         var users = await _context.Users
             .Where(u => !u.Delflg &&
-                (u.UserName!.ToLower().Contains(lower) ||
-                 u.Fullname!.ToLower().Contains(lower) ||
-                 u.Email!.ToLower().Contains(lower)))
+                ((u.UserName != null && u.UserName.ToLower().Contains(lower)) ||
+                 (u.Fullname != null && u.Fullname.ToLower().Contains(lower)) ||
+                 (u.Email != null && u.Email.ToLower().Contains(lower))))
             .OrderBy(u => u.Fullname)
             .Skip(skip)
             .Take(pageSize)
             .AsNoTracking()
             .ToListAsync();
 
-        // Đếm mutual friends nếu có currentUserId
+        // ✅ FIX: Nếu không có currentUserId, return ngay không cần tính mutual friends
+        if (!currentUserId.HasValue)
+        {
+            return users.Select(u => new SearchUserResultDto
+            {
+                UserId = u.Id,
+                UserName = u.UserName ?? string.Empty,
+                FullName = u.Fullname ?? string.Empty,
+                AvatarUrl = u.AvatarUrl,
+                MutualFriendsCount = 0
+            }).ToList();
+        }
+
+        //  FIX: SINGLE QUERY - Lấy tất cả friendships cần thiết trong 1 lần
+        // Thay vì query trong loop (N+1 problem), ta query 1 lần cho tất cả users
+        var userIds = users.Select(u => u.Id).ToList();
+        userIds.Add(currentUserId.Value); // Thêm currentUser vào list
+
+        // Query 1 lần duy nhất để lấy tất cả friendships liên quan
+        var allFriendships = await _context.Friendships
+            .Where(f => f.Status == "Accepted" && !f.IsBlocked && !f.Delflg &&
+                        (userIds.Contains(f.RequesterId) || userIds.Contains(f.AddresseeId)))
+            .Select(f => new { f.RequesterId, f.AddresseeId })
+            .AsNoTracking()
+            .ToListAsync();
+
+        // FIX: Build friendship map trong memory (rất nhanh)
+        // Dictionary cho phép lookup O(1) thay vì query database O(n)
+        var friendshipMap = new Dictionary<long, HashSet<long>>();
+        foreach (var f in allFriendships)
+        {
+            // Tạo bidirectional mapping
+            if (!friendshipMap.ContainsKey(f.RequesterId))
+                friendshipMap[f.RequesterId] = new HashSet<long>();
+            if (!friendshipMap.ContainsKey(f.AddresseeId))
+                friendshipMap[f.AddresseeId] = new HashSet<long>();
+            
+            friendshipMap[f.RequesterId].Add(f.AddresseeId);
+            friendshipMap[f.AddresseeId].Add(f.RequesterId);
+        }
+
+        // Lấy danh sách bạn bè của currentUser
+        var myFriends = friendshipMap.GetValueOrDefault(currentUserId.Value, new HashSet<long>());
+
+        // ✅ FIX: Tính mutual friends trong memory (không query database)
         var result = new List<SearchUserResultDto>();
         foreach (var u in users)
         {
-            var mutual = 0;
-            if (currentUserId.HasValue && u.Id != currentUserId.Value)
-            {
-                // Bạn bè của currentUser
-                var myFriends = await _context.Friendships
-                    .Where(f => f.Status == "Accepted" && !f.IsBlocked && !f.Delflg &&
-                                (f.RequesterId == currentUserId.Value || f.AddresseeId == currentUserId.Value))
-                    .Select(f => f.RequesterId == currentUserId.Value ? f.AddresseeId : f.RequesterId)
-                    .ToListAsync();
-
-                // Bạn bè của user kết quả
-                var theirFriends = await _context.Friendships
-                    .Where(f => f.Status == "Accepted" && !f.IsBlocked && !f.Delflg &&
-                                (f.RequesterId == u.Id || f.AddresseeId == u.Id))
-                    .Select(f => f.RequesterId == u.Id ? f.AddresseeId : f.RequesterId)
-                    .ToListAsync();
-
-                mutual = myFriends.Intersect(theirFriends).Count();
-            }
+            var theirFriends = friendshipMap.GetValueOrDefault(u.Id, new HashSet<long>());
+            var mutual = myFriends.Intersect(theirFriends).Count();
 
             result.Add(new SearchUserResultDto
             {

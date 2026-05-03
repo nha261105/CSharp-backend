@@ -357,12 +357,20 @@ namespace InteractHub.Infrastructure.Services
 
         public async Task<List<FriendSuggestionDto>> GetFriendSuggestionsAsync(long currentUserId, int limit)
         {
+            // ✅ FIX: Query 1 - Lấy bạn bè của currentUser
             var myFriendIds = await GetFriendIdsAsync(currentUserId);
 
-            // Lấy tất cả IDs cần loại trừ: bản thân + bạn bè + pending (cả 2 chiều) + blocked
+            // ✅ FIX: Nếu không có bạn bè, return empty (không có gợi ý)
+            if (!myFriendIds.Any())
+            {
+                return new List<FriendSuggestionDto>();
+            }
+
+            // ✅ FIX: Query 2 - Lấy tất cả IDs cần loại trừ
             var excludedIds = new HashSet<long>(myFriendIds) { currentUserId };
 
             var pendingOrBlockedIds = await _context.Friendships
+                .AsNoTracking()
                 .Where(f => (f.RequesterId == currentUserId || f.AddresseeId == currentUserId)
                             && (f.Status == "Pending" || f.IsBlocked)
                             && f.Delflg == false)
@@ -371,8 +379,9 @@ namespace InteractHub.Infrastructure.Services
 
             foreach (var id in pendingOrBlockedIds) excludedIds.Add(id);
 
-            // 2-hop: bạn của bạn bè, chưa bị loại trừ
+            // ✅ FIX: Query 3 - Lấy candidates (bạn của bạn bè)
             var candidates = await _context.Friendships
+                .AsNoTracking()
                 .Where(f => (myFriendIds.Contains(f.RequesterId) || myFriendIds.Contains(f.AddresseeId))
                             && f.Status == "Accepted" && f.Delflg == false)
                 .Select(f => myFriendIds.Contains(f.RequesterId) ? f.AddresseeId : f.RequesterId)
@@ -380,17 +389,54 @@ namespace InteractHub.Infrastructure.Services
                 .Where(id => !excludedIds.Contains(id))
                 .ToListAsync();
 
-            // Lấy thông tin user và đếm mutual friends
+            // ✅ FIX: Nếu không có candidates, return empty
+            if (!candidates.Any())
+            {
+                return new List<FriendSuggestionDto>();
+            }
+
+            // ✅ FIX: Query 4 - Lấy user info
             var users = await _context.Users
                 .Where(u => candidates.Contains(u.Id) && u.Delflg == false && u.IsActive)
                 .Select(u => new { u.Id, u.UserName, u.Fullname, u.AvatarUrl })
+                .AsNoTracking()
                 .ToListAsync();
 
+            // ✅ FIX: Query 5 - SINGLE QUERY để lấy TẤT CẢ friendships của candidates
+            // Thay vì query trong loop (N queries), ta query 1 lần cho tất cả
+            var candidateIds = users.Select(u => u.Id).ToList();
+            
+            var allCandidateFriendships = await _context.Friendships
+                .Where(f => f.Status == "Accepted" && !f.IsBlocked && !f.Delflg &&
+                            (candidateIds.Contains(f.RequesterId) || candidateIds.Contains(f.AddresseeId)))
+                .Select(f => new { f.RequesterId, f.AddresseeId })
+                .AsNoTracking()
+                .ToListAsync();
+
+            // ✅ FIX: Build friendship map trong memory
+            // Dictionary<UserId, HashSet<FriendIds>>
+            var candidateFriendshipMap = new Dictionary<long, HashSet<long>>();
+            foreach (var f in allCandidateFriendships)
+            {
+                if (!candidateFriendshipMap.ContainsKey(f.RequesterId))
+                    candidateFriendshipMap[f.RequesterId] = new HashSet<long>();
+                if (!candidateFriendshipMap.ContainsKey(f.AddresseeId))
+                    candidateFriendshipMap[f.AddresseeId] = new HashSet<long>();
+                
+                candidateFriendshipMap[f.RequesterId].Add(f.AddresseeId);
+                candidateFriendshipMap[f.AddresseeId].Add(f.RequesterId);
+            }
+
+            // ✅ FIX: Convert myFriendIds sang HashSet để Intersect nhanh hơn
+            var myFriendsSet = new HashSet<long>(myFriendIds);
+
+            // ✅ FIX: Tính mutual friends trong memory (KHÔNG query database)
             var result = new List<FriendSuggestionDto>();
             foreach (var u in users)
             {
-                var theirFriendIds = await GetFriendIdsAsync(u.Id);
-                var mutualCount = myFriendIds.Intersect(theirFriendIds).Count();
+                var theirFriends = candidateFriendshipMap.GetValueOrDefault(u.Id, new HashSet<long>());
+                var mutualCount = myFriendsSet.Intersect(theirFriends).Count();
+                
                 result.Add(new FriendSuggestionDto
                 {
                     UserId = u.Id,
@@ -401,8 +447,10 @@ namespace InteractHub.Infrastructure.Services
                 });
             }
 
+            // ✅ FIX: Sort và limit trong memory (rất nhanh)
             return result
                 .OrderByDescending(x => x.MutualFriendsCount)
+                .ThenBy(x => x.FullName) // Thêm secondary sort để consistent
                 .Take(limit)
                 .ToList();
         }

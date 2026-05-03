@@ -44,8 +44,8 @@ public interface IPostService
     Task<int> ToggleCommentReactionAsync(long currentUserId, long postId, long commentId, string reactionType);
 
     Task<List<CommentReactionDetailResponseDto>> GetCommentReactionsDetailAsync(long commentId);
-    Task<List<CommentResponseDto>> GetPostCommentsAsync(long postId, int page, int pageSize);
-    Task<List<CommentResponseDto>> GetCommentRepliesAsync(long postId, long commentId, int page, int pageSize);
+    Task<List<CommentResponseDto>> GetPostCommentsAsync(long? currentUserId, long postId, int page, int pageSize);
+    Task<List<CommentResponseDto>> GetCommentRepliesAsync(long? currentUserId, long postId, long commentId, int page, int pageSize);
     Task<List<PostReactionDetailResponseDto>> GetPostReactionsDetailAsync(long postId, int page, int pageSize);
     Task<bool> DeletePostAsync(long currentUserId, long postId);
 

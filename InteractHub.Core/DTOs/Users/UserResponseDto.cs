@@ -21,4 +21,5 @@ public class UserResponseDto
     public int FollowingCount { get; set; }
     public int PostCount { get; set; }
     public int FriendCount { get; set; }
+    public RelationState Relation { get; set; } = RelationState.NONE;
 }

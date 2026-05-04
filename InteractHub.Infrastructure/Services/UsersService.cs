@@ -92,7 +92,7 @@ public class UsersService : IUsersService
         });
     }
 
-    public async Task<UserResponseDto?> GetUserProfileAsync(long id)
+    public async Task<UserResponseDto?> GetUserProfileAsync(long id, long currentUserId)
     {
         var user = await _userManager.FindByIdAsync(id.ToString());
         if (user == null) return null;
@@ -100,7 +100,29 @@ public class UsersService : IUsersService
         var profile = await _context.UserProfiles
             .FirstOrDefaultAsync(p => p.UserId == id);
 
-        return MapToDto(user, profile);
+        var dto = MapToDto(user, profile);
+
+        if (currentUserId == id)
+        {
+            dto.Relation = RelationState.ISME;
+        }
+        else
+        {
+            var friendship = await _context.Friendships.FirstOrDefaultAsync(f =>
+                (f.RequesterId == currentUserId && f.AddresseeId == id) ||
+                (f.RequesterId == id && f.AddresseeId == currentUserId));
+
+            dto.Relation = friendship switch
+            {
+                { IsBlocked: true } when friendship.BlockedById == currentUserId => RelationState.BLOCKED,
+                { Status: "Accepted", Delflg: false } => RelationState.FRIEND,
+                { Status: "Pending", Delflg: false } when friendship.RequesterId == currentUserId => RelationState.SENT,
+                { Status: "Pending", Delflg: false } when friendship.AddresseeId == currentUserId => RelationState.RECEIVED,
+                _ => RelationState.NONE
+            };
+        }
+
+        return dto;
     }
 
     public async Task<UserResponseDto?> UpdateProfileAsync(long userId, UpdateProfileRequestDto dto)

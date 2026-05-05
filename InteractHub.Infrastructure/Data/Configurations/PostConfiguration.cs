@@ -21,11 +21,11 @@ public class PostConfiguration : IEntityTypeConfiguration<Post>
 
         builder.Property(p => p.Content)
             .HasColumnName("content")
-            .HasColumnType("text");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(p => p.ContentFormat)
             .HasColumnName("content_format")
-            .HasColumnType("text");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(p => p.PostType)
             .HasColumnName("post_type")

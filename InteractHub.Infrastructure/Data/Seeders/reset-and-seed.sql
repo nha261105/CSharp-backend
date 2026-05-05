@@ -8,11 +8,83 @@
 --     -P 'Interacthub@123A' -d InteractHubDb -C -i /dev/stdin
 -- ============================================================
 
+SET NOCOUNT ON;
+GO
+
+
 BEGIN TRANSACTION;
+
+
+-- ============================================================
+-- BƯỚC 0: FIX COLLATION CHO CÁC CỘT CHỨA TIẾNG VIỆT
+-- ============================================================
+PRINT N'Bước 0: Đang cập nhật collation cho các cột...';
+ 
+-- Tắt foreign key để ALTER COLUMN không bị lỗi
+ALTER TABLE [CommentMentions]  NOCHECK CONSTRAINT ALL;
+ALTER TABLE [CommentLikes]     NOCHECK CONSTRAINT ALL;
+ALTER TABLE [Comments]         NOCHECK CONSTRAINT ALL;
+ALTER TABLE [StoryReactions]   NOCHECK CONSTRAINT ALL;
+ALTER TABLE [StoryViews]       NOCHECK CONSTRAINT ALL;
+ALTER TABLE [Stories]          NOCHECK CONSTRAINT ALL;
+ALTER TABLE [Notifications]    NOCHECK CONSTRAINT ALL;
+ALTER TABLE [PostReports]      NOCHECK CONSTRAINT ALL;
+ALTER TABLE [PostLikes]        NOCHECK CONSTRAINT ALL;
+ALTER TABLE [PostMentions]     NOCHECK CONSTRAINT ALL;
+ALTER TABLE [PostHashtags]     NOCHECK CONSTRAINT ALL;
+ALTER TABLE [PostMedia]        NOCHECK CONSTRAINT ALL;
+ALTER TABLE [PostShares]       NOCHECK CONSTRAINT ALL;
+ALTER TABLE [Posts]            NOCHECK CONSTRAINT ALL;
+ALTER TABLE [Friendships]      NOCHECK CONSTRAINT ALL;
+ALTER TABLE [UserProfiles]     NOCHECK CONSTRAINT ALL;
+ 
+-- AspNetUsers
+ALTER TABLE [AspNetUsers] ALTER COLUMN [full_name] NVARCHAR(256) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [AspNetUsers] ALTER COLUMN [bio] NVARCHAR(500) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [AspNetUsers] ALTER COLUMN [location] NVARCHAR(100) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [AspNetUsers] ALTER COLUMN [gender] NVARCHAR(10) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- Posts
+ALTER TABLE [Posts] ALTER COLUMN [content] NVARCHAR(MAX) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [Posts] ALTER COLUMN [feeling] NVARCHAR(50) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [Posts] ALTER COLUMN [location_name] NVARCHAR(200) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- Comments
+ALTER TABLE [Comments] ALTER COLUMN [content] NVARCHAR(1000) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- UserProfiles
+ALTER TABLE [UserProfiles] ALTER COLUMN [relationship_status] NVARCHAR(50) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [UserProfiles] ALTER COLUMN [work_place] NVARCHAR(200) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [UserProfiles] ALTER COLUMN [position] NVARCHAR(100) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [UserProfiles] ALTER COLUMN [education] NVARCHAR(200) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [UserProfiles] ALTER COLUMN [hometown] NVARCHAR(100) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [UserProfiles] ALTER COLUMN [current_city] NVARCHAR(100) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- Stories
+ALTER TABLE [Stories] ALTER COLUMN [caption] NVARCHAR(500) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- Notifications
+ALTER TABLE [Notifications] ALTER COLUMN [message] NVARCHAR(500) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- PostReports
+ALTER TABLE [PostReports] ALTER COLUMN [description] NVARCHAR(1000) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [PostReports] ALTER COLUMN [review_note] NVARCHAR(1000) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- PostShares
+ALTER TABLE [PostShares] ALTER COLUMN [share_content] NVARCHAR(500) COLLATE Vietnamese_CI_AS NULL;
+ 
+-- MusicTracks
+ALTER TABLE [MusicTracks] ALTER COLUMN [title] NVARCHAR(200) COLLATE Vietnamese_CI_AS NULL;
+ALTER TABLE [MusicTracks] ALTER COLUMN [artist] NVARCHAR(200) COLLATE Vietnamese_CI_AS NULL;
+ 
+PRINT N'✓ Collation đã được cập nhật thành Vietnamese_CI_AS';
 
 -- ============================================================
 -- BƯỚC 1: TẮT FOREIGN KEY (để DELETE không bị lỗi thứ tự)
 -- ============================================================
+
+PRINT N'Bước 1: Đang tắt foreign key constraints...';
+
 ALTER TABLE [CommentMentions]  NOCHECK CONSTRAINT ALL;
 ALTER TABLE [CommentLikes]     NOCHECK CONSTRAINT ALL;
 ALTER TABLE [Comments]         NOCHECK CONSTRAINT ALL;
@@ -42,6 +114,9 @@ ALTER TABLE [AspNetRoles]      NOCHECK CONSTRAINT ALL;
 -- ============================================================
 -- BƯỚC 2: XÓA DATA (child trước, parent sau)
 -- ============================================================
+
+PRINT N'Bước 2: Đang xóa dữ liệu cũ...';
+
 DELETE FROM [CommentMentions];
 DELETE FROM [CommentLikes];
 DELETE FROM [Comments];
@@ -71,6 +146,9 @@ DELETE FROM [AspNetRoles];
 -- ============================================================
 -- BƯỚC 3: BẬT LẠI FOREIGN KEY
 -- ============================================================
+
+PRINT N'Bước 3: Đang bật lại foreign key constraints...';
+
 ALTER TABLE [CommentMentions]  WITH CHECK CHECK CONSTRAINT ALL;
 ALTER TABLE [CommentLikes]     WITH CHECK CHECK CONSTRAINT ALL;
 ALTER TABLE [Comments]         WITH CHECK CHECK CONSTRAINT ALL;
@@ -100,6 +178,9 @@ ALTER TABLE [AspNetRoles]      WITH CHECK CHECK CONSTRAINT ALL;
 -- ============================================================
 -- BƯỚC 4: RESET IDENTITY VỀ 0 (trước khi insert)
 -- ============================================================
+
+PRINT N'Bước 4: Đang reset identity seeds...';
+
 DBCC CHECKIDENT ('[AspNetRoles]',    RESEED, 0);
 DBCC CHECKIDENT ('[AspNetUsers]',    RESEED, 0);
 DBCC CHECKIDENT ('[UserProfiles]',   RESEED, 0);
@@ -121,6 +202,9 @@ DBCC CHECKIDENT ('[PostReports]',    RESEED, 0);
 -- ============================================================
 -- BƯỚC 5: INSERT SEED DATA
 -- ============================================================
+
+PRINT N'Bước 5: Đang insert seed data...';
+
 
 -- ------------------------------------------------------------
 -- Roles (3 roles)
@@ -732,6 +816,26 @@ DBCC CHECKIDENT ('[StoryViews]',     RESEED, 9);
 DBCC CHECKIDENT ('[StoryReactions]', RESEED, 8);
 DBCC CHECKIDENT ('[Notifications]',  RESEED, 7);
 DBCC CHECKIDENT ('[PostReports]',    RESEED, 1);
+
+PRINT N'';
+PRINT N'========================================';
+PRINT N'✓ HOÀN TẤT! Database đã được reset và seed thành công';
+PRINT N'✓ Collation: Vietnamese_CI_AS';
+PRINT N'✓ Tổng số users: 10';
+PRINT N'✓ Tổng số posts: 10';
+PRINT N'✓ Tổng số comments: 11';
+PRINT N'✓ Dữ liệu tiếng Việt đã được fix encoding';
+PRINT N'========================================';
+GOPRINT N'';
+PRINT N'========================================';
+PRINT N'✓ HOÀN TẤT! Database đã được reset và seed thành công';
+PRINT N'✓ Collation: Vietnamese_CI_AS';
+PRINT N'✓ Tổng số users: 10';
+PRINT N'✓ Tổng số posts: 10';
+PRINT N'✓ Tổng số comments: 11';
+PRINT N'✓ Dữ liệu tiếng Việt đã được fix encoding';
+PRINT N'========================================';
+GO
 
 COMMIT TRANSACTION;
 

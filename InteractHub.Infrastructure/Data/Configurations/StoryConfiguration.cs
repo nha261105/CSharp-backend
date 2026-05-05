@@ -39,7 +39,7 @@ public class StoryConfiguration : IEntityTypeConfiguration<Story>
 
         builder.Property(s => s.CaptionFormat)
             .HasColumnName("caption_format")
-            .HasColumnType("text");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(s => s.BgColor)
             .HasColumnName("bg_color")

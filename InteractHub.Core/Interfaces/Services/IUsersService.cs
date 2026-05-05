@@ -11,7 +11,7 @@ public interface IUsersService
     Task<IEnumerable<SearchUsersResponseDto>> SearchUsersAsync(string keyword, int page = 1, int pageSize = 20);
 
     // GET /api/users/{id}/profile
-    Task<UserResponseDto?> GetUserProfileAsync(long id);
+    Task<UserResponseDto?> GetUserProfileAsync(long id, long currentUserId);
 
     // PUT /api/users/{id}
     Task<UserResponseDto?> UpdateProfileAsync(long userId, UpdateProfileRequestDto dto);

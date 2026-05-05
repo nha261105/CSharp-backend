@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using InteractHub.Core.DTOs.Users;
 using InteractHub.Core.Interfaces.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -49,7 +50,10 @@ public class UsersController : ControllerBase
     [HttpGet("{id}/profile")]
     public async Task<IActionResult> GetUserProfile(long id)
     {
-        var result = await _usersService.GetUserProfileAsync(id);
+        if (!long.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var currentUserId))
+            return Unauthorized();
+
+        var result = await _usersService.GetUserProfileAsync(id, currentUserId);
         if (result == null)
             return NotFound(new { message = "Không tìm thấy người dùng" });
 

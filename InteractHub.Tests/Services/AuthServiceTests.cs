@@ -18,7 +18,7 @@ public class AuthServiceTests
     {
         var userStoreMock = new Mock<IUserStore<User>>();
         _mockUserManager = new Mock<UserManager<User>>(
-            userStoreMock.Object, null, null, null, null, null, null, null, null);
+            userStoreMock.Object, null!, null!, null!, null!, null!, null!, null!, null!);
 
         var contextAccessorMock = new Mock<Microsoft.AspNetCore.Http.IHttpContextAccessor>();
         var claimsFactoryMock = new Mock<IUserClaimsPrincipalFactory<User>>();
@@ -27,13 +27,13 @@ public class AuthServiceTests
             _mockUserManager.Object,
             contextAccessorMock.Object,
             claimsFactoryMock.Object,
-            null, null, null, null);
+            null!, null!, null!, null!);
 
         _mockJwtService = new Mock<IJwtTokenService>();
     }
 
     [Fact]
-    public async Task Login_ReturnsToken_WhenCredentialsValid()
+    public void Login_ReturnsToken_WhenCredentialsValid()
     {
         // Arrange
         var user = new User

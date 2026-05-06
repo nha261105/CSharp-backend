@@ -33,7 +33,7 @@ public class CommentConfiguration : IEntityTypeConfiguration<Comment>
 
         builder.Property(c => c.ContentFormat)
             .HasColumnName("content_format")
-            .HasColumnType("text");
+            .HasColumnType("nvarchar(max)");
 
         builder.Property(c => c.ImageUrl)
             .HasColumnName("image_url")

@@ -679,11 +679,20 @@ public class PostsService : IPostService
 
             if (req.ParentCommentId.HasValue) 
             {
-                var parent = await _context.Comments.FindAsync(req.ParentCommentId.Value);
-                if (parent != null) 
+                long? currentParentId = req.ParentCommentId.Value;
+                while (currentParentId.HasValue) 
                 {
-                    parent.ReplyCount++;
-                    parent.UpdDatetime = DateTime.UtcNow;
+                    var parent = await _context.Comments.FindAsync(currentParentId.Value);
+                    if (parent != null) 
+                    {
+                        parent.ReplyCount++;
+                        parent.UpdDatetime = DateTime.UtcNow;
+                        currentParentId = parent.ParentCommentId;
+                    }
+                    else
+                    {
+                        currentParentId = null;
+                    }
                 }
             }
 
@@ -779,6 +788,21 @@ public class PostsService : IPostService
         };
     }
 
+    private async Task<List<Comment>> GetDescendantsAsync(long commentId)
+    {
+        var sql = @"
+            WITH Descendants AS (
+                SELECT * FROM Comments WHERE parent_comment_id = {0} AND delflg = 0
+                UNION ALL
+                SELECT c.* FROM Comments c
+                INNER JOIN Descendants d ON c.parent_comment_id = d.comment_id
+                WHERE c.delflg = 0
+            )
+            SELECT * FROM Descendants;";
+        
+        return await _context.Comments.FromSqlRaw(sql, commentId).ToListAsync();
+    }
+
     public async Task<bool> DeleteCommentAsync(long currentUserId, long postId, long commentId)
     {
         var strategy = _context.Database.CreateExecutionStrategy();
@@ -795,26 +819,45 @@ public class PostsService : IPostService
             if (comment.UserId != currentUserId)
                 throw new UnauthorizedAccessException("Bạn không có quyền xóa bình luận này.");
 
-            // Soft delete comment
+            // Find all descendants
+            var descendants = await GetDescendantsAsync(commentId);
+            int totalDeleted = 1 + descendants.Count;
+
+            // Soft delete parent and all descendants
             comment.Delflg = true;
             comment.UpdDatetime = DateTime.UtcNow;
+
+            foreach (var child in descendants)
+            {
+                child.Delflg = true;
+                child.UpdDatetime = DateTime.UtcNow;
+            }
 
             // Giảm CommentCount trên bài viết
             var post = await _context.Posts.FindAsync(postId);
             if (post != null)
             {
-                post.CommentCount = Math.Max(0, post.CommentCount - 1);
+                post.CommentCount = Math.Max(0, post.CommentCount - totalDeleted);
                 post.UpdDatetime = DateTime.UtcNow;
             }
 
-            // Nếu là reply → giảm ReplyCount của comment cha
+            // Nếu là reply → giảm ReplyCount của tất cả comment cha theo chuỗi phân cấp
             if (comment.ParentCommentId.HasValue)
             {
-                var parent = await _context.Comments.FindAsync(comment.ParentCommentId.Value);
-                if (parent != null)
+                long? currentParentId = comment.ParentCommentId.Value;
+                while (currentParentId.HasValue)
                 {
-                    parent.ReplyCount = Math.Max(0, parent.ReplyCount - 1);
-                    parent.UpdDatetime = DateTime.UtcNow;
+                    var parent = await _context.Comments.FindAsync(currentParentId.Value);
+                    if (parent != null)
+                    {
+                        parent.ReplyCount = Math.Max(0, parent.ReplyCount - totalDeleted);
+                        parent.UpdDatetime = DateTime.UtcNow;
+                        currentParentId = parent.ParentCommentId;
+                    }
+                    else
+                    {
+                        currentParentId = null;
+                    }
                 }
             }
 
@@ -901,7 +944,7 @@ public class PostsService : IPostService
     public async Task<List<CommentResponseDto>> GetPostCommentsAsync(long? currentUserId, long postId, int page, int pageSize)
     {
     var comments = await _context.Comments
-        .Where(c => c.PostId == postId && !c.Delflg)
+        .Where(c => c.PostId == postId && c.ParentCommentId == null && !c.Delflg)
         .Include(c => c.User)
         .Include(c => c.CommentMentions)
             .ThenInclude(m => m.MentionedUser)

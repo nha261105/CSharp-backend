@@ -99,7 +99,7 @@ builder.Services.AddAuthentication(options =>
         OnMessageReceived = context =>
         {
             if (context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications") &&
-                context.Request.Query.TryGetValuhube("access_token", out var accessToken))
+                context.Request.Query.TryGetValue("access_token", out var accessToken))
             {
                 context.Token = accessToken;
             }
@@ -166,7 +166,9 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(opts =>
+        opts.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
 
 // FluentValidation
 builder.Services.AddFluentValidationAutoValidation();

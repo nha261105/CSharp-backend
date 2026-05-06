@@ -901,7 +901,7 @@ public class PostsService : IPostService
     public async Task<List<CommentResponseDto>> GetPostCommentsAsync(long? currentUserId, long postId, int page, int pageSize)
     {
     var comments = await _context.Comments
-        .Where(c => c.PostId == postId && !c.Delflg)
+        .Where(c => c.PostId == postId && c.ParentCommentId == null && !c.Delflg)
         .Include(c => c.User)
         .Include(c => c.CommentMentions)
             .ThenInclude(m => m.MentionedUser)

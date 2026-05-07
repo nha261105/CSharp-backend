@@ -9,10 +9,16 @@ namespace InteractHub.Infrastructure.Services;
 public class StoriesService : IStoriesService
 {
     private readonly AppDbContext _context;
+    private readonly INotificationsService _notificationsService;
+    private readonly INotificationRealtimeService _notificationRealtimeService;
 
-    public StoriesService(AppDbContext context)
+    public StoriesService(AppDbContext context,
+        INotificationsService notificationsService,
+        INotificationRealtimeService notificationRealtimeService)
     {
         _context = context;
+        _notificationsService = notificationsService;
+        _notificationRealtimeService = notificationRealtimeService;
     }
 
     public async Task<StoryResponseDto> CreateStoryAsync(long userId, CreateStoryRequestDto dto)
@@ -275,6 +281,7 @@ public class StoriesService : IStoriesService
         var existing = await _context.StoryReactions
             .FirstOrDefaultAsync(r => r.StoryId == storyId && r.UserId == userId && !r.Delflg);
 
+        var isNewReaction = false;
         if (existing != null)
         {
             existing.ReactionType = dto.ReactionType;
@@ -287,12 +294,29 @@ public class StoriesService : IStoriesService
                 StoryId = storyId,
                 UserId = userId,
                 ReactionType = dto.ReactionType,
-                RegDatetime = DateTime.UtcNow
+                RegDatetime = DateTime.UtcNow,
+                Delflg = false
             });
             story.ReactionCount++;
+            isNewReaction = true;
         }
 
         await _context.SaveChangesAsync();
+
+        // Nếu là reaction mới và không phải tự reaction story của chính mình -> gửi notification
+        if (isNewReaction && story.UserId != userId)
+        {
+            var notification = await _notificationsService.CreateNotificationAsync(
+                recipientId: story.UserId,
+                notificationType: "StoryReacted",
+                senderId: userId,
+                referenceId: story.StoryId,
+                referenceType: "Story",
+                message: "đã bày tỏ cảm xúc về story của bạn",
+                redirectUrl: $"/stories/{story.StoryId}");
+
+            await _notificationRealtimeService.PushNotificationCreatedAsync(story.UserId, notification);
+        }
 
         var reaction = await _context.StoryReactions
             .Include(r => r.User)

@@ -392,6 +392,7 @@ public class PostsService : IPostService
         }
 
         // Bulk insert PostMention nếu client gửi kèm danh sách mention
+        var postMentionEntities = new List<PostMention>();
         if (req.Mentions != null && req.Mentions.Count > 0)
         {
             // Validate: chỉ insert những userId thực sự tồn tại trong DB
@@ -401,7 +402,7 @@ public class PostsService : IPostService
                 .Select(u => u.Id)
                 .ToListAsync();
 
-            var mentionEntities = req.Mentions
+            postMentionEntities = req.Mentions
                 .Where(m => validIds.Contains(m.MentionedUserId))
                 .Select(m => new PostMention
                 {
@@ -414,17 +415,38 @@ public class PostsService : IPostService
                 })
                 .ToList();
 
-            if (mentionEntities.Count > 0)
+            if (postMentionEntities.Count > 0)
             {
-                _context.PostMentions.AddRange(mentionEntities);
+                _context.PostMentions.AddRange(postMentionEntities);
                 await _context.SaveChangesAsync();
             }
         }
 
-        var createdPost = await BuildPostGraphQuery(asNoTracking: true)
-            .FirstAsync(p => p.PostId == post.PostId);
+            var createdPost = await BuildPostGraphQuery(asNoTracking: true)
+                .FirstAsync(p => p.PostId == post.PostId);
 
-        return await MapToDtoAsync(createdPost, currentUserId);
+            // Gửi notification đến những user được tag trong bài viết (không gửi cho chính mình)
+            if (postMentionEntities != null && postMentionEntities.Count > 0)
+            {
+                var mentionedIds = postMentionEntities.Select(m => m.MentionedUserId).Distinct();
+                foreach (var mentionedId in mentionedIds)
+                {
+                    if (mentionedId == currentUserId) continue;
+
+                    var notification = await _notificationsService.CreateNotificationAsync(
+                        recipientId: mentionedId,
+                        notificationType: "PostMentioned",
+                        senderId: currentUserId,
+                        referenceId: post.PostId,
+                        referenceType: "Post",
+                        message: "đã gắn thẻ bạn trong một bài viết",
+                        redirectUrl: $"/posts/{post.PostId}");
+
+                    await _notificationRealtimeService.PushNotificationCreatedAsync(mentionedId, notification);
+                }
+            }
+
+            return await MapToDtoAsync(createdPost, currentUserId);
     }
 
     public async Task<PostResponseDto?> UpdatePostAsnc(long currentUserId, long PostId, UpdatePostRequestDto req)
@@ -714,6 +736,54 @@ public class PostsService : IPostService
                 await _notificationRealtimeService.PushNotificationCreatedAsync(post.UserId, notification);
             }
 
+            // Nếu là trả lời 1 comment -> gửi notification cho chủ comment (không gửi cho chính mình)
+            if (req.ParentCommentId.HasValue)
+            {
+                var parentComment = await _context.Comments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(c => c.CommentId == req.ParentCommentId.Value && !c.Delflg);
+
+                if (parentComment != null && parentComment.UserId != currentUserId)
+                {
+                    var notification = await _notificationsService.CreateNotificationAsync(
+                        recipientId: parentComment.UserId,
+                        notificationType: "CommentReplied",
+                        senderId: currentUserId,
+                        referenceId: comment.CommentId,
+                        referenceType: "Comment",
+                        message: "đã trả lời bình luận của bạn",
+                        redirectUrl: $"/posts/{postId}#comment-{comment.CommentId}");
+
+                    await _notificationRealtimeService.PushNotificationCreatedAsync(parentComment.UserId, notification);
+                }
+            }
+
+            // Gửi notification cho những user được mention trong comment
+            var createdMentions = await _context.CommentMentions
+                .AsNoTracking()
+                .Where(m => m.CommentId == comment.CommentId && !m.Delflg)
+                .ToListAsync();
+
+            if (createdMentions != null && createdMentions.Count > 0)
+            {
+                var mentionedIds = createdMentions.Select(m => m.MentionedUserId).Distinct();
+                foreach (var mentionedId in mentionedIds)
+                {
+                    if (mentionedId == currentUserId) continue;
+
+                    var notification = await _notificationsService.CreateNotificationAsync(
+                        recipientId: mentionedId,
+                        notificationType: "CommentMentioned",
+                        senderId: currentUserId,
+                        referenceId: comment.CommentId,
+                        referenceType: "Comment",
+                        message: "đã gắn thẻ bạn trong một bình luận",
+                        redirectUrl: $"/posts/{postId}#comment-{comment.CommentId}");
+
+                    await _notificationRealtimeService.PushNotificationCreatedAsync(mentionedId, notification);
+                }
+            }
+
             var currentUser = await _context.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == currentUserId);
 
             return new CommentResponseDto
@@ -889,6 +959,8 @@ public class PostsService : IPostService
         var existing = await _context.CommentLikes
             .FirstOrDefaultAsync(l => l.CommentId == commentId && l.UserId == currentUserId);
 
+        string? resultReactionType = null;
+
         if (existing != null)
         {
             if (existing.ReactionType == reactionType)
@@ -896,12 +968,14 @@ public class PostsService : IPostService
                 // Same reaction → toggle off (remove)
                 _context.CommentLikes.Remove(existing);
                 comment.LikeCount = Math.Max(0, comment.LikeCount - 1);
+                resultReactionType = null;
             }
             else
             {
                 // Different reaction → switch type
                 existing.ReactionType = reactionType;
                 existing.RegDatetime = DateTime.UtcNow;
+                resultReactionType = reactionType;
             }
         }
         else
@@ -915,9 +989,26 @@ public class PostsService : IPostService
                 Delflg = false
             });
             comment.LikeCount++;
+            resultReactionType = reactionType;
         }
 
         await _context.SaveChangesAsync();
+
+        // Gửi notification chỉ khi có reaction (không khi toggle off)
+        if (resultReactionType != null && comment.UserId != currentUserId)
+        {
+            var notification = await _notificationsService.CreateNotificationAsync(
+                recipientId: comment.UserId,
+                notificationType: "CommentReacted",
+                senderId: currentUserId,
+                referenceId: comment.CommentId,
+                referenceType: "Comment",
+                message: "đã bày tỏ cảm xúc về bình luận của bạn",
+                redirectUrl: $"/posts/{postId}#comment-{commentId}");
+
+            await _notificationRealtimeService.PushNotificationCreatedAsync(comment.UserId, notification);
+        }
+
         return comment.LikeCount;
     }
 

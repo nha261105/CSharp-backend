@@ -13,6 +13,7 @@ using System.Security.Claims;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using InteractHub.API.Validators.Auth;
+using InteractHub.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
@@ -96,44 +97,8 @@ builder.Services.AddAuthentication(options =>
 
     options.Events = new JwtBearerEvents
     {
-        OnMessageReceived = context =>
-        {
-            if (context.HttpContext.Request.Path.StartsWithSegments("/hubs/notifications") &&
-                context.Request.Query.TryGetValue("access_token", out var accessToken))
-            {
-                context.Token = accessToken;
-            }
-
-            return Task.CompletedTask;
-        },
-        OnTokenValidated = async context =>
-        {
-            var userManager = context.HttpContext.RequestServices.GetRequiredService<UserManager<User>>();
-            var principal = context.Principal;
-
-            var userId = principal?.FindFirstValue(JwtRegisteredClaimNames.Sub)
-                ?? principal?.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if(!long.TryParse(userId, out var parsedUserId))
-            {
-                context.Fail("Invalid token subject");
-                return;
-            }
-
-            var user = await userManager.FindByIdAsync(parsedUserId.ToString());
-            if(user == null || !user.IsActive)
-            {
-                context.Fail("User is not active");
-                return;
-            }
-
-            var tokenSecurityStamp = principal?.FindFirstValue("security_stamp");
-            if(string.IsNullOrWhiteSpace(tokenSecurityStamp)
-                || !string.Equals(tokenSecurityStamp, user.SecurityStamp, StringComparison.Ordinal))
-            {
-                context.Fail("Token has been revoked");
-            }
-        }
+        OnMessageReceived = JwtBearerEventHandler.OnMessageReceived,
+        OnTokenValidated = JwtBearerEventHandler.OnTokenValidated
     };
 });
 
